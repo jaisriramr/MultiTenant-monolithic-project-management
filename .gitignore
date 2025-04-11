@@ -1,0 +1,93 @@
+HELP.md
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# === Maven ===
+/target/
+!src/main/resources/static/**/target/
+
+# === Gradle ===
+.gradle/
+build/
+
+# === IntelliJ IDEA ===
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# === VS Code ===
+.vscode/
+
+# === Logs ===
+logs/
+*.log
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === Environment / Secrets ===
+.env
+.env.*
+application-local.properties
+application-dev.properties
+application-prod.properties
+
+# === Auth0 / Credentials ===
+auth0_config.json
+secrets.json
+
+# === Redis dump ===
+dump.rdb
+
+# === Tests / Coverage ===
+test-output/
+jacoco.exec
+
+# === Swagger Generated Files ===
+swagger-ui.html
+doc/
+
+# === Spring Boot Devtools ===
+.spring-boot-devtools.properties
+
+# === Database ===
+*.h2.db
+*.mv.db
+*.sqlite
+
+# === Build Scripts ===
+/mvnw
+/mvnw.cmd
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
