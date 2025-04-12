@@ -26,7 +26,7 @@ public class Auth0Client {
     private final RestTemplate restTemplate;
 
     private String generateAuth0Token() {
-        String url = "https://" + auth0Config.getAuth0Domain() + "/oauth/token";
+        String url = "https://" + auth0Config.getDomain() + "/oauth/token";
         
         Map<String, Object> requestBody = Map.of(
             "client_id", auth0Config.getClientId(),
