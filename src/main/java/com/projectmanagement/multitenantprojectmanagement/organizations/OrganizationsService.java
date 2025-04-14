@@ -1,7 +1,21 @@
 package com.projectmanagement.multitenantprojectmanagement.organizations;
 
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.CreateOrganizationRequest;
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.UpdateOrganizationRequest;
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationsResponse;
+import com.projectmanagement.multitenantprojectmanagement.organizations.mapper.OrganizationMapper;
+
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -9,6 +23,70 @@ import lombok.RequiredArgsConstructor;
 public class OrganizationsService {
 
     private final OrganizationsRepository organizationsRepository;
+    private final Auth0Service auth0Service;
     
+    public OrganizationResponse getOrganizationById(UUID id) {
+        try {
+            Organizations organization = organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            return OrganizationMapper.toOrganizationResponse(organization);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch organization with id {}" + id);
+        }
+    }
+
+    public List<OrganizationsResponse> getOrganizations() {
+        try {
+            List<Organizations> organizations = organizationsRepository.findAll();
+
+            return OrganizationMapper.toOrganizationsResponse(organizations);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch all organizations");
+        }
+    }
+
+    @Transactional
+    public OrganizationResponse createAnOrganization(CreateOrganizationRequest createOrganizationRequest) {
+        try {
+            ResponseEntity<Map<String, Object>> auth0Response =  auth0Service.createAnOrganization(createOrganizationRequest.getName(), createOrganizationRequest.getDisplayName());
+            Organizations organization = OrganizationMapper.toEntityOrganization(createOrganizationRequest, auth0Response.getBody().get("id").toString());
+
+            Organizations savedOrganization = organizationsRepository.save(organization);
+            return OrganizationMapper.toOrganizationResponse(savedOrganization);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to create an organization", e);
+        }
+    }
+
+    @Transactional
+    public OrganizationResponse updateAnOrganiation(UpdateOrganizationRequest updateOrganizationRequest) {
+        try {
+            Organizations organizations = organizationsRepository.findById(updateOrganizationRequest.getId()).orElseThrow(() -> new NotFoundException());
+
+            auth0Service.updateAnOrganization(organizations.getAuth0Id(), updateOrganizationRequest.getName(), updateOrganizationRequest.getDisplayName());
+
+            organizations.setName(updateOrganizationRequest.getName());
+            organizations.setDisplayName(updateOrganizationRequest.getDisplayName());
+
+            Organizations updatedOrganization = organizationsRepository.save(organizations);
+
+            return OrganizationMapper.toOrganizationResponse(updatedOrganization);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to update an organization", e);
+        }
+    }
+
+    @Transactional
+    public String deleteOrganizationById(UUID id) {
+        try {
+            organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            organizationsRepository.deleteById(id);
+            
+            return "Organization with Id " + id + " is removed successfully!";
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to delete an organization", e);
+        }
+    }
 
 }

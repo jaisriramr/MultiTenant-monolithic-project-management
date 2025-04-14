@@ -36,6 +36,8 @@ public class Roles {
 
     private String organizationId;
 
+    private String auth0Id;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt;
