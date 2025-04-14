@@ -4,16 +4,18 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
+import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
+
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class OrganizationMembersResponseDto {
+public class UserDetailsFromOrganizationMember {
     private UUID id;
-    private UUID userId;
-    private UUID organizationId;
-    private String organizationName;
+    private UserResponseDto user;
+    private OrganizationResponse organization;
     private Set<OrganizationMembersRoleDto> roles;
     private LocalDate joinedAt;
 }

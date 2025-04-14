@@ -3,8 +3,11 @@ package com.projectmanagement.multitenantprojectmanagement.roles.mapper;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
+import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.PaginatedRoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RolesResponse;
 
@@ -14,6 +17,7 @@ public class RoleMapper {
         return RoleResponse.builder()
                 .id(role.getId())
                 .name(role.getName())
+                .auth0Id(role.getAuth0Id())
                 .organizationId(role.getOrganizationId())
                 .build();
     }
@@ -39,6 +43,17 @@ public class RoleMapper {
         role.setOrganizationId(createRoleRequest.getOrganizationId());
         role.setAuth0Id(auth0Id);
         return role;
+    }
+
+    public static PaginatedRoleResponse<RolesResponse> toPaginatedRoleResponse(Page<Roles> roles, List<RolesResponse> rolesResponse) {
+
+        return PaginatedRoleResponse.<RolesResponse>builder()
+                .data(rolesResponse)
+                .page(roles.getNumber())
+                .size(roles.getSize())
+                .totalElements(roles.getTotalElements())
+                .totalPages(roles.getTotalPages())
+                .build();
     }
 
 }

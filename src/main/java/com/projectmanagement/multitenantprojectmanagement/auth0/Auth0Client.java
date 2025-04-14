@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -53,8 +54,12 @@ public class Auth0Client {
             headers.setBearerAuth(generateAuth0Token());
         }
 
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        if(method == HttpMethod.PATCH) {
+            restTemplate.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
+        }
 
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
         HttpEntity<?> entity = (body != null) ? new HttpEntity<>(body, headers) : new HttpEntity<>(headers);
         return restTemplate.exchange(url, method, entity, new ParameterizedTypeReference<Map<String, Object>>() {
         });

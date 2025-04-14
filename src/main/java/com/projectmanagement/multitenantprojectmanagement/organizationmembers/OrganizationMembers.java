@@ -2,6 +2,7 @@ package com.projectmanagement.multitenantprojectmanagement.organizationmembers;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Set;
 import java.util.UUID;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -19,6 +20,9 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -44,8 +48,13 @@ public class OrganizationMembers {
     @ManyToOne(fetch = FetchType.LAZY)
     private Organizations organization;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private Roles role;
+    @ManyToMany(fetch = FetchType.LAZY) 
+    @JoinTable(
+        name = "organization_members_roles",
+        joinColumns = @JoinColumn(name = "organization_member_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Roles> role;
 
     private LocalDate joinedAt;
 
@@ -56,4 +65,10 @@ public class OrganizationMembers {
     @LastModifiedDate
     @Column(name = "updated_at")
     private Instant updatedAt;
+
+    private Boolean isDeleted;
+
+    private Instant deletedAt;
+
+    private UUID deletedBy;
 }

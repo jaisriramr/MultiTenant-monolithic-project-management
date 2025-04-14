@@ -46,13 +46,13 @@ public class OrganizationsService {
     }
 
     @Transactional
-    public OrganizationResponse createAnOrganization(CreateOrganizationRequest createOrganizationRequest) {
+    public Organizations createAnOrganization(CreateOrganizationRequest createOrganizationRequest) {
         try {
             ResponseEntity<Map<String, Object>> auth0Response =  auth0Service.createAnOrganization(createOrganizationRequest.getName(), createOrganizationRequest.getDisplayName());
             Organizations organization = OrganizationMapper.toEntityOrganization(createOrganizationRequest, auth0Response.getBody().get("id").toString());
 
             Organizations savedOrganization = organizationsRepository.save(organization);
-            return OrganizationMapper.toOrganizationResponse(savedOrganization);
+            return savedOrganization;
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to create an organization", e);
         }

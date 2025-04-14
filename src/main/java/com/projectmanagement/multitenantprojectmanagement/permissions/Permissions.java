@@ -38,8 +38,6 @@ public class Permissions {
 
     private String Description;
 
-    private String auth0Id;
-
     @CreatedDate
     @Column(name="created_at", updatable = false, nullable = false)
     private Instant createdAt;

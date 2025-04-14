@@ -1,16 +1,14 @@
 package com.projectmanagement.multitenantprojectmanagement.auth0.utils;
 
-import java.util.UUID;
-
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.stereotype.Component;
 
-import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Config;
+import lombok.AllArgsConstructor;
 
-import lombok.RequiredArgsConstructor;
-
-@RequiredArgsConstructor
+@Component
+@AllArgsConstructor
 public class JWTUtils {
 
     public static String getCurrentUserId() {

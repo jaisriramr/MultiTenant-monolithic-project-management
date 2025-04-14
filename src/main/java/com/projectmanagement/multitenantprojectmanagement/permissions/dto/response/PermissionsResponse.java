@@ -10,5 +10,4 @@ import lombok.Data;
 public class PermissionsResponse {
     private UUID id;
     private String name;
-    private String authoId;
 }

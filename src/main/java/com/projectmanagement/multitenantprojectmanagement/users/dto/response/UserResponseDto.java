@@ -17,7 +17,7 @@ public class UserResponseDto {
     private About about;
     private String profilePic;
     private String coverPic;
-    private String isActive;
+    private boolean isActive;
     // roles
     // organizations
 }

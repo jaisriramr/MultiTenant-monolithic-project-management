@@ -1,4 +1,4 @@
-package com.projectmanagement.multitenantprojectmanagement.roles.dto.response;
+package com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response;
 
 import java.util.UUID;
 
@@ -7,9 +7,8 @@ import lombok.Data;
 
 @Data
 @Builder
-public class RoleResponse {
+public class OrganizationResponseForOrganizationMembersDto {
     private UUID id;
     private String name;
     private String auth0Id;
-    private String organizationId;
 }

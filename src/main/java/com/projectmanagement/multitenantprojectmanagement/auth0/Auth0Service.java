@@ -111,14 +111,14 @@ public class Auth0Service {
             "name", name,
             "description", description
         );
-
+        
         return auth0Client.makeApiRequest(HttpMethod.POST, url, requestBody, true);
     }
 
     public ResponseEntity<Map<String, Object>> updateARole(String roleId, String name, String description) {
 
         String url = "https://" + auth0Config.getDomain() + "/api/v2/roles/" + roleId;
-
+        System.out.println("RRRRRR " + url);
         Map<String, Object> requestBody = Map.of(
             "name", name,
             "description", description
@@ -157,12 +157,10 @@ public class Auth0Service {
         auth0Client.makeApiRequest(HttpMethod.POST, url, requestbody, true);
     }
 
-    public ResponseEntity<Map<String, Object>> createOrUpdateOrDeletePermission(List<Map<String, String>> permissions) {
-        String url = "https://" + auth0Config.getDomain() + "/api/v2/resource-servers/" + auth0Config.getDomain();
+    public ResponseEntity<Map<String, Object>> createOrUpdateOrDeletePermission(Map<String, Object> permissions) {
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/resource-servers/" + auth0Config.getApiId();
 
-        Map<String, Object> requestBody = Map.of("permissions", permissions);
-
-        return auth0Client.makeApiRequest(HttpMethod.PATCH, url, requestBody, true);
+        return auth0Client.makeApiRequest(HttpMethod.PATCH, url, permissions, true);
     }
 
 }
