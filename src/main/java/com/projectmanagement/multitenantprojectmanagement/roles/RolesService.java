@@ -5,12 +5,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.UpdateRoleRequest;
+import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.PaginatedRoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RolesResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMapper;
@@ -35,13 +38,23 @@ public class RolesService {
         }
     }
     
-    public List<RolesResponse> getAllRoles() {
+    public PaginatedRoleResponse<RolesResponse> getAllRoles(Pageable pageable) {
         try {
-            List<Roles> roles = rolesRepository.findAll();
+            Page<Roles> roles = rolesRepository.findAll(pageable);
 
-            return RoleMapper.toRolesResponse(roles);
+            List<RolesResponse> rolesReponse = RoleMapper.toRolesResponse(roles.getContent());
+
+            return RoleMapper.toPaginatedRoleResponse(roles, rolesReponse);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to fetch all roles", e);
+        }
+    }
+
+    public Roles getRoleByName(String name) {
+        try {
+            return rolesRepository.findByName(name).orElseThrow(() -> new NotFoundException());
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to get role by name - " + name, e);
         }
     }
 
@@ -80,7 +93,9 @@ public class RolesService {
     @Transactional
     public String deleteRoleById(UUID id) {
         try {
-            rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            
+            auth0Service.removeRoleFromAuth0(role.getAuth0Id());
             
             rolesRepository.deleteById(id);
 

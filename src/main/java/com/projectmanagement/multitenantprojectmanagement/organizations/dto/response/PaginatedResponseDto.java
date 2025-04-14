@@ -1,4 +1,4 @@
-package com.projectmanagement.multitenantprojectmanagement.organizations.dto.request;
+package com.projectmanagement.multitenantprojectmanagement.organizations.dto.response;
 
 import java.util.List;
 

@@ -81,16 +81,24 @@ public class UserService {
         }
     }
 
-    @Transactional
-    public UserResponseDto createUser(CreateUserRequest createUserRequest) {
+    public UserResponseDto getUserByAuth0Id(String auth0Id) {
         try {
+            Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
 
+            return UserMapper.toUserReponse(user);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch user by auth0Id {}" + auth0Id);
+        }
+    }
+
+    @Transactional
+    public Users createUser(CreateUserRequest createUserRequest) {
+        try {
             Users user = UserMapper.toCreateUserEntity(createUserRequest);
 
             Users savedUser = userRepository.save(user);
-            // make api call to auth0 to map role to user and also to user
 
-            return UserMapper.toUserReponse(savedUser);
+            return savedUser;
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to create an user");
         }

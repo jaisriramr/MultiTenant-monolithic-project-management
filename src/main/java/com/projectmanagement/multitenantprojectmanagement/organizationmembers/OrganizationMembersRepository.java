@@ -22,5 +22,10 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
 
     Page<OrganizationMembers> findAllByUserId(UUID userId, Pageable pageable);
 
+    Page<OrganizationMembers> findAllByOrganizationId(UUID organizationId, Pageable pageable);
+
     Optional<OrganizationMembers> findByUser_Auth0IdAndOrganization_Auth0Id(String auth0UserId, String auth0OrganizationId);
+
+    Page<OrganizationMembers> findAllByOrganization_Auth0IdAndRole_Auth0Id(String auth0OrganizationId, String auth0RoleId, Pageable pageble);
+
 }

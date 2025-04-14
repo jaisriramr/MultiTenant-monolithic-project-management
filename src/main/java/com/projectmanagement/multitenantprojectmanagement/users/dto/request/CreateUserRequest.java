@@ -2,9 +2,11 @@ package com.projectmanagement.multitenantprojectmanagement.users.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class CreateUserRequest {
 
     @NotBlank(message = "Name is required")
