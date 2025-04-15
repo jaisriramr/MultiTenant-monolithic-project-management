@@ -84,7 +84,7 @@ public class UserService {
     public UserResponseDto getUserByAuth0Id(String auth0Id) {
         try {
             Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
-
+            
             return UserMapper.toUserReponse(user);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to fetch user by auth0Id {}" + auth0Id);
@@ -107,7 +107,35 @@ public class UserService {
     @Transactional
     public UserResponseDto updateUser(UpdateUserRequest updateUserRequest) {
         try {
-            Users user = UserMapper.toUpdateUserEntity(updateUserRequest);
+            
+            Users user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new NotFoundException());
+            
+            if(user.getAbout() == null) {
+                user.setAbout(updateUserRequest.getAbout());
+            }else{
+                if(user.getAbout().getJobTitle() != null) {
+                    user.getAbout().setJobTitle(updateUserRequest.getAbout().getJobTitle());
+                }
+                if(user.getAbout().getDepartment() != null) {
+                    user.getAbout().setDepartment(updateUserRequest.getAbout().getDepartment());
+                }
+                if(user.getAbout().getCompanyName() != null) {
+                    user.getAbout().setCompanyName(updateUserRequest.getAbout().getCompanyName());
+                }
+                if(user.getAbout().getLocation() != null) {
+                    user.getAbout().setLocation(updateUserRequest.getAbout().getLocation());
+                }
+            }
+
+            if(updateUserRequest.getName() != null) {
+                user.setName(updateUserRequest.getName());
+            }
+            if(updateUserRequest.getCoverPic() != null) {
+                user.setCoverPic(updateUserRequest.getCoverPic());
+            }
+            if(updateUserRequest.getProfilePic() != null) {
+                user.setProfilePic(updateUserRequest.getProfilePic());
+            }
             
             Users updatedUser = userRepository.save(user);
             // make api call to auth0 to update user to auth0

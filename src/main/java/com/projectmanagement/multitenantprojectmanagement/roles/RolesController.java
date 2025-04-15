@@ -51,6 +51,12 @@ public class RolesController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/v1/role/auth0Id/{roleId}")
+    public ResponseEntity<RoleResponse> getRoleByAuth0Id(@PathVariable String roleId) {
+        RoleResponse role = rolesService.getRoleByAuth0Id(roleId);
+        return ResponseEntity.ok(role);
+    }
+
     @PostMapping("/v1/role")
     public ResponseEntity<RoleResponse> createRole(@Valid @RequestBody CreateRoleRequest createRoleRequest) {
         RoleResponse role = rolesService.createRole(createRoleRequest);

@@ -12,8 +12,10 @@ import lombok.Data;
 public class OrganizationMembersResponseDto {
     private UUID id;
     private UUID userId;
+    private String userAuth0Id;
     private UUID organizationId;
     private String organizationName;
+    private String orgAuth0Id;
     private Set<OrganizationMembersRoleDto> roles;
     private LocalDate joinedAt;
 }

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
@@ -42,9 +43,9 @@ public class OrganizationMembersController {
         return ResponseEntity.ok(organizationMember);
     }
 
-    @GetMapping("/v1/organization-members/user/{id}")
-    public ResponseEntity<PaginatedResponseDto<OrganizationMembersResponseDto>> getOrgsWhereUserIsAMember(@PathVariable UUID id, Pageable pageable) {
-        PaginatedResponseDto<OrganizationMembersResponseDto> organizationMembers = organizationMembersService.getOrgsWhereUserIsAMember(id, pageable);
+    @GetMapping("/v1/organization-members/user/{auth0UserId}")
+    public ResponseEntity<PaginatedResponseDto<OrganizationMembersResponseDto>> getOrgsWhereUserIsAMember(@PathVariable String auth0UserId, Pageable pageable) {
+        PaginatedResponseDto<OrganizationMembersResponseDto> organizationMembers = organizationMembersService.getOrgsWhereUserIsAMember(auth0UserId, pageable);
         return ResponseEntity.ok(organizationMembers);
     }
 
@@ -67,15 +68,30 @@ public class OrganizationMembersController {
     }
 
     @PostMapping("/v1/organization-member/onboard")
-    public ResponseEntity<OrganizationMembersResponseDto> onBoardUser(@RequestBody OnBoardRequest onBoardRequest) {
-        OrganizationMembersResponseDto onBoardedUserDetails = organizationMembersService.onBoardUser(onBoardRequest);
+    public ResponseEntity<UserDetailsFromOrganizationMember> onBoardUser(@RequestBody OnBoardRequest onBoardRequest) {
+        UserDetailsFromOrganizationMember onBoardedUserDetails = organizationMembersService.onBoardUser(onBoardRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(onBoardedUserDetails);
+    }
+
+    @PostMapping("/v1/organization-member/{orgMemberId}/assign/roles")
+    public ResponseEntity<String> assignRolesToAnUser(@PathVariable UUID orgMemberId ,@RequestBody AssignRoleToUserDto assignRoleToUserDto) {
+        String response = organizationMembersService.assignRolesToAnUser(orgMemberId, assignRoleToUserDto);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/v1/organization-member/{orgMemberId}/remove/roles")
+    public ResponseEntity<String> removeRolesToAnUser(@PathVariable UUID orgMemberId ,@RequestBody AssignRoleToUserDto assignRoleToUserDto) {
+        String response = organizationMembersService.removeRolesFromAnUser(orgMemberId, assignRoleToUserDto);
+
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/v1/organization-member/{id}")
     public ResponseEntity<String> deleteOrganzationMemberById(@PathVariable UUID id) {
         String subId = jwtUtils.getCurrentUserId();
-        String response = organizationMembersService.deleteById(id, subId);
+
+        String response = organizationMembersService.deleteById(id, subId.replace("auth0|", ""));
         return ResponseEntity.ok(response);
     }
 

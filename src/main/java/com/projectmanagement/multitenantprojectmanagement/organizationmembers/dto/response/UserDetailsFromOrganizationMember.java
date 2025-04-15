@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
@@ -17,5 +18,8 @@ public class UserDetailsFromOrganizationMember {
     private UserResponseDto user;
     private OrganizationResponse organization;
     private Set<OrganizationMembersRoleDto> roles;
+    private Boolean isDeleted;
+    private Instant deletedAt;
+    private UUID deletedBy;
     private LocalDate joinedAt;
 }
