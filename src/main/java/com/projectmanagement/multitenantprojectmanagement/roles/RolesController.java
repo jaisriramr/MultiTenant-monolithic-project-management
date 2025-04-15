@@ -68,7 +68,13 @@ public class RolesController {
     public ResponseEntity<RoleResponse> assignPermissionsToARole(@PathVariable UUID roleId ,@RequestBody AssignPermissions assignPermissions) {
         RoleResponse role = rolesService.assignPermissionsToARole(roleId, assignPermissions.getPermissions());
         return ResponseEntity.ok(role);
-    }  
+    }
+    
+    @PostMapping("/v1/role/{roleId}/remove/permissions")
+    public ResponseEntity<RoleResponse> removePermissionsToARole(@PathVariable UUID roleId ,@RequestBody AssignPermissions assignPermissions) {
+        RoleResponse role = rolesService.removePermissionsToARole(roleId, assignPermissions.getPermissions());
+        return ResponseEntity.ok(role);
+    }
 
     @PutMapping("/v1/role")
     public ResponseEntity<RoleResponse> UpdateRole(@Valid @RequestBody UpdateRoleRequest updateRoleRequest) {
