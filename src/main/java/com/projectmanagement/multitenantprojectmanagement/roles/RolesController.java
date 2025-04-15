@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.AssignPermissions;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.UpdateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.PaginatedRoleResponse;
@@ -62,6 +63,12 @@ public class RolesController {
         RoleResponse role = rolesService.createRole(createRoleRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(role);
     }
+
+    @PostMapping("/v1/role/{roleId}/assign/permissions")
+    public ResponseEntity<RoleResponse> assignPermissionsToARole(@PathVariable UUID roleId ,@RequestBody AssignPermissions assignPermissions) {
+        RoleResponse role = rolesService.assignPermissionsToARole(roleId, assignPermissions.getPermissions());
+        return ResponseEntity.ok(role);
+    }  
 
     @PutMapping("/v1/role")
     public ResponseEntity<RoleResponse> UpdateRole(@Valid @RequestBody UpdateRoleRequest updateRoleRequest) {

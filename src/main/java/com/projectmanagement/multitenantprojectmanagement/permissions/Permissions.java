@@ -36,7 +36,7 @@ public class Permissions {
 
     private String module;
 
-    private String Description;
+    private String description;
 
     @CreatedDate
     @Column(name="created_at", updatable = false, nullable = false)
