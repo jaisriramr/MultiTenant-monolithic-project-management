@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.roles;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
+import com.projectmanagement.multitenantprojectmanagement.permissions.PermissionsService;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.UpdateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.PaginatedRoleResponse;
@@ -27,6 +30,7 @@ public class RolesService {
 
     private final RolesRepository rolesRepository;
     private final Auth0Service auth0Service;
+    private final PermissionsService permissionsService;
 
     public RoleResponse getRoleById(UUID id) {
         try {
@@ -73,6 +77,30 @@ public class RolesService {
             return RoleMapper.toRoleResponse(role);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to get role by auth0 - " + auth0Id, e);
+        }
+    }
+
+    @Transactional
+    public RoleResponse assignPermissionsToARole(UUID id, List<String> permissions) {
+        try {
+
+            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            List<Permissions> permissionsList = permissionsService.getAllPermissionsByNameList(permissions);
+
+            if(role.getPermissions() == null) {
+                role.setPermissions(new HashSet<>());
+            }
+
+            role.getPermissions().addAll(permissionsList);
+
+            auth0Service.assignOrRemovePermissionToARole(role.getAuth0Id(), permissions);
+
+            Roles savedRole = rolesRepository.save(role);
+
+            return RoleMapper.toRoleResponse(savedRole);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to assign permissions to a role", e);
         }
     }
 

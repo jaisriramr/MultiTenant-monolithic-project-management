@@ -149,7 +149,7 @@ public class Auth0Service {
     }
 
     public void assignOrRemovePermissionToARole(String roleId, List<String> permissions) {
-        String url = "https://" + auth0Config.getDomain() + "/api/v2/roles/" + roleId;
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/roles/" + roleId + "/permissions";
     
         Stream<Object> permissionList = permissions.stream().map(permission -> Map.of("resource_server_identifier", auth0Config.getIdentifier(), "permission_name", permission));
         Map<String, Object> requestbody = Map.of("permissions", permissionList);

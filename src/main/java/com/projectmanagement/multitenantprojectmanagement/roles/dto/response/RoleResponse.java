@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.roles.dto.response;
 
+import java.util.Set;
 import java.util.UUID;
 
 import lombok.Builder;
@@ -12,4 +13,5 @@ public class RoleResponse {
     private String name;
     private String auth0Id;
     private String organizationId;
+    private Set<String> permissions;
 }

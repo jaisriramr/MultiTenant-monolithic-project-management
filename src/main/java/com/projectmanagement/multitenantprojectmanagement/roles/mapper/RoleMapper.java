@@ -2,9 +2,11 @@ package com.projectmanagement.multitenantprojectmanagement.roles.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 
+import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.PaginatedRoleResponse;
@@ -19,6 +21,7 @@ public class RoleMapper {
                 .name(role.getName())
                 .auth0Id(role.getAuth0Id())
                 .organizationId(role.getOrganizationId())
+                .permissions(role.getPermissions().stream().map(Permissions::getName).collect(Collectors.toSet()))
                 .build();
     }
 

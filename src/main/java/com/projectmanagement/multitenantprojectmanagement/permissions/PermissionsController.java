@@ -12,9 +12,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.CreatePermissionRequest;
+import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.ListPermissionByNames;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionsResponse;
 
@@ -43,6 +45,18 @@ public class PermissionsController {
     public ResponseEntity<PermissionResponse> getPermissionById(@PathVariable UUID id) {
         PermissionResponse permission = permissionsService.getPermissionById(id);
         return ResponseEntity.ok(permission);
+    }
+
+    @GetMapping("/by/module")
+    public ResponseEntity<List<PermissionsResponse>> getAllPermissionsByModule(@RequestParam String module) {
+        List<PermissionsResponse> permissions = permissionsService.getAllPermissionsByModule(module);
+        return ResponseEntity.ok(permissions);
+    }
+
+    @PostMapping("/by/names")
+    public ResponseEntity<List<Permissions>> getAllPermissionsByNames(@RequestBody List<String> permissionList) {
+        List<Permissions> response = permissionsService.getAllPermissionsByNameList(permissionList);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/all")

@@ -45,6 +45,33 @@ public class PermissionsService {
         }
     }
 
+    public List<Permissions> getAllPermissionsById(List<UUID> permissionIds) {
+        try {
+            List<Permissions> permissions = permissionsRepository.findAllById(permissionIds);
+            return permissions;
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch all permissions by list of ids");
+        }
+    }
+
+    public List<PermissionsResponse> getAllPermissionsByModule(String module) {
+        try {
+            List<Permissions> permissions = permissionsRepository.findByModule(module);
+            return PermissionMapper.toPermissionsResponses(permissions);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch all permissions by module"); 
+        }
+    }
+
+    public List<Permissions> getAllPermissionsByNameList(List<String> permissionNames) {
+        try {
+            List<Permissions> permissions = permissionsRepository.findByNameIn(permissionNames);
+            return permissions;
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch all permissions by list of names");
+        }
+    }
+
     public List<PermissionsResponse> createOrUpdateOrDeletePermissions(List<CreatePermissionRequest> permissions) {
         try {
 
