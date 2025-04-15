@@ -157,6 +157,15 @@ public class Auth0Service {
         auth0Client.makeApiRequest(HttpMethod.POST, url, requestbody, true);
     }
 
+    public void removePermissionFromARole(String roleId, List<String> permissions) {
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/roles/" + roleId + "/permissions";
+    
+        Stream<Object> permissionList = permissions.stream().map(permission -> Map.of("resource_server_identifier", auth0Config.getIdentifier(), "permission_name", permission));
+        Map<String, Object> requestbody = Map.of("permissions", permissionList);
+
+        auth0Client.makeApiRequest(HttpMethod.DELETE, url, requestbody, true);
+    }
+
     public ResponseEntity<Map<String, Object>> createOrUpdateOrDeletePermission(Map<String, Object> permissions) {
         String url = "https://" + auth0Config.getDomain() + "/api/v2/resource-servers/" + auth0Config.getApiId();
 

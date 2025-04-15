@@ -1,9 +1,11 @@
 package com.projectmanagement.multitenantprojectmanagement.roles;
 
+import java.security.Permission;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
@@ -101,6 +103,25 @@ public class RolesService {
             return RoleMapper.toRoleResponse(savedRole);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to assign permissions to a role", e);
+        }
+    }
+
+    @Transactional
+    public RoleResponse removePermissionsToARole(UUID id, List<String> permissions) {
+        try {
+            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            List<Permissions> permissionsList = permissionsService.getAllPermissionsByNameList(permissions);
+
+            role.getPermissions().removeAll(permissionsList);
+
+            auth0Service.removePermissionFromARole(role.getAuth0Id(), permissions);
+
+            Roles savedRole = rolesRepository.save(role);
+
+            return RoleMapper.toRoleResponse(savedRole);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to remove permissions to a role", e);
         }
     }
 
