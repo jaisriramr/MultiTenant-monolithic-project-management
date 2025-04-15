@@ -73,4 +73,13 @@ public class PermissionsService {
         }
     }
 
+    public String removeAllPermissions() {
+        try {
+            permissionsRepository.deleteAll();
+            return "All Permissions are removed";
+        }catch(Exception e){
+            throw new RuntimeException("Error while trying to delete all permissions");
+        }
+    }
+
 }
