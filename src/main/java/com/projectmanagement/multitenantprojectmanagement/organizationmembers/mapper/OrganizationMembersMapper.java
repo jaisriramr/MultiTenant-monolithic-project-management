@@ -63,8 +63,10 @@ public class OrganizationMembersMapper {
             OrganizationMembersResponseDto org = OrganizationMembersResponseDto.builder()
                     .id(organizationMember.getId())
                     .userId(organizationMember.getUser().getId())
+                    .userAuth0Id(organizationMember.getUser().getAuth0Id())
                     .organizationId(organizationMember.getOrganization().getId())
                     .organizationName(organizationMember.getOrganization().getName())
+                    .orgAuth0Id(organizationMember.getOrganization().getAuth0Id())
                     // .roleId(organizationMember.getRole().getId())
                     .roles(organizationMember.getRole().stream().map(role -> new OrganizationMembersRoleDto(role.getId(), role.getName(), role.getAuth0Id())).collect(Collectors.toSet()))
                     .joinedAt(organizationMember.getJoinedAt())
@@ -101,6 +103,9 @@ public class OrganizationMembersMapper {
                                                 .user(user)
                                                 .organization(organization)
                                                 .roles(organizationMembers.getRole().stream().map(role -> new OrganizationMembersRoleDto(role.getId(), role.getName(), role.getAuth0Id())).collect(Collectors.toSet()))
+                                                .isDeleted(organizationMembers.getIsDeleted())
+                                                .deletedAt(organizationMembers.getDeletedAt())
+                                                .deletedBy(organizationMembers.getDeletedBy())
                                                 .joinedAt(organizationMembers.getJoinedAt())
                                                 .build();
 

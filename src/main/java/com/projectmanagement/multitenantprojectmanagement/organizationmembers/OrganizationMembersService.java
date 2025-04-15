@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
@@ -66,9 +67,9 @@ public class OrganizationMembersService {
     }
 
     // super admin level or support role
-    public PaginatedResponseDto<OrganizationMembersResponseDto> getOrgsWhereUserIsAMember(UUID userId, Pageable pageable) {
+    public PaginatedResponseDto<OrganizationMembersResponseDto> getOrgsWhereUserIsAMember(String userId, Pageable pageable) {
         try {
-            Page<OrganizationMembers> organizationMembers = organizationMembersRepository.findAllByUserId(userId, pageable);
+            Page<OrganizationMembers> organizationMembers = organizationMembersRepository.findAllByUser_Auth0Id("auth0|" + userId, pageable);
 
             List<OrganizationMembersResponseDto> orgs = OrganizationMembersMapper.toOrganizationMembersResponseDto(organizationMembers);
             
@@ -99,18 +100,14 @@ public class OrganizationMembersService {
     }
 
     public UserDetailsFromOrganizationMember getSpecificMember(String auth0UserId, String auth0OrganizationId) {
-        try {
-        
-            OrganizationMembers organizationMembers = organizationMembersRepository.findByUser_Auth0IdAndOrganization_Auth0Id(auth0UserId, auth0OrganizationId).orElseThrow(() -> new NotFoundException());
+       
+        OrganizationMembers organizationMembers = organizationMembersRepository.findByUser_Auth0IdAndOrganization_Auth0Id(auth0UserId, auth0OrganizationId).orElseThrow(() -> new RuntimeException("Not Found Please Check your credentials"));
 
-            return OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMembers);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch current user's organization details", e);
-        }
+        return OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMembers);  
     }
 
     @Transactional
-    public OrganizationMembersResponseDto onBoardUser(OnBoardRequest onBoardRequest) {
+    public UserDetailsFromOrganizationMember onBoardUser(OnBoardRequest onBoardRequest) {
         try {
 
             // create user
@@ -132,9 +129,13 @@ public class OrganizationMembersService {
                 organizationMembers.setRole(new HashSet<>());
             }
             organizationMembers.getRole().add(defaultRole);
+
+            // assign role to user in auth0
+            auth0Service.assignRolesToUser(onBoardRequest.getUserAuth0Id(), List.of(defaultRole.getAuth0Id()));
+
             organizationMembers.setJoinedAt(LocalDate.now());
             OrganizationMembers savedOrganizationMembers = organizationMembersRepository.save(organizationMembers);
-            return OrganizationMembersMapper.toOrganizationMemberResponseDto(savedOrganizationMembers);
+            return OrganizationMembersMapper.toSpecificUserOrganizationMember(savedOrganizationMembers);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to onboard user",e);
         }
@@ -144,15 +145,57 @@ public class OrganizationMembersService {
     public String deleteById(UUID id, String subId) {
         try {
             OrganizationMembers organizationMembers = organizationMembersRepository.findById(id).orElseThrow(() -> new NotFoundException());
-            UserResponseDto user = userService.getUserByAuth0Id(subId);
+            
+            String auth0Id = "auth0|" + subId;
+
+            UserResponseDto user = userService.getUserByAuth0Id(auth0Id);
 
             organizationMembers.setIsDeleted(true);
             organizationMembers.setDeletedAt(Instant.now());
             organizationMembers.setDeletedBy(user.getId());
-            
+
             return "Organization Members details with id " + id + " is removed successfully!";
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to delete organiation member with id {}" + id,e);
+        }
+    }
+
+    @Transactional
+    public String assignRolesToAnUser(UUID id, AssignRoleToUserDto assignRoleToUserDto) {
+        try {
+            OrganizationMembers organizationMember = organizationMembersRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
+
+            auth0Service.assignRolesToUser(organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
+
+            organizationMember.getRole().addAll(roles);
+
+            organizationMembersRepository.save(organizationMember);
+
+            return "Roles has been assigned successfully!";
+
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to assign roles to an user", e);
+        }
+    }
+
+    @Transactional
+    public String removeRolesFromAnUser(UUID id, AssignRoleToUserDto assignRoleToUserDto) {
+        try {
+            OrganizationMembers organizationMember = organizationMembersRepository.findById(id).orElseThrow(() -> new NotFoundException());
+
+            List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
+
+            auth0Service.removeRolesFromUser(organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
+
+            organizationMember.getRole().removeAll(roles);
+
+            organizationMembersRepository.save(organizationMember);
+
+            return "Roles has been removed successfully!";
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to remove roles to an user", e);
         }
     }
 

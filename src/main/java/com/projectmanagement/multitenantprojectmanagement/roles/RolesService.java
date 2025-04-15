@@ -50,11 +50,29 @@ public class RolesService {
         }
     }
 
+    public List<Roles> getAllByIds(List<String> roleIds) {
+        try {
+            return rolesRepository.findAllByAuth0IdIn(roleIds);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to fetch all the roles by id given",e);
+        }
+    }
+
     public Roles getRoleByName(String name) {
         try {
             return rolesRepository.findByName(name).orElseThrow(() -> new NotFoundException());
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to get role by name - " + name, e);
+        }
+    }
+
+    public RoleResponse getRoleByAuth0Id(String auth0Id) {
+        try {
+            Roles role = rolesRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
+
+            return RoleMapper.toRoleResponse(role);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to get role by auth0 - " + auth0Id, e);
         }
     }
 

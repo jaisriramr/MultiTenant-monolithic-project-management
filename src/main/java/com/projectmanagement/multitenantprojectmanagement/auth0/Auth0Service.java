@@ -118,7 +118,7 @@ public class Auth0Service {
     public ResponseEntity<Map<String, Object>> updateARole(String roleId, String name, String description) {
 
         String url = "https://" + auth0Config.getDomain() + "/api/v2/roles/" + roleId;
-        System.out.println("RRRRRR " + url);
+        
         Map<String, Object> requestBody = Map.of(
             "name", name,
             "description", description

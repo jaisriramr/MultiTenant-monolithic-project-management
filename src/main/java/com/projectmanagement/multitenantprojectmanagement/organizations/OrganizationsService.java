@@ -26,13 +26,9 @@ public class OrganizationsService {
     private final Auth0Service auth0Service;
     
     public OrganizationResponse getOrganizationById(UUID id) {
-        try {
-            Organizations organization = organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            Organizations organization = organizationsRepository.findById(id).orElseThrow(() -> new RuntimeException("Organization Not Found"));
 
             return OrganizationMapper.toOrganizationResponse(organization);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch organization with id {}" + id);
-        }
     }
 
     public List<OrganizationsResponse> getOrganizations() {
@@ -62,11 +58,17 @@ public class OrganizationsService {
     public OrganizationResponse updateAnOrganiation(UpdateOrganizationRequest updateOrganizationRequest) {
         try {
             Organizations organizations = organizationsRepository.findById(updateOrganizationRequest.getId()).orElseThrow(() -> new NotFoundException());
-
-            auth0Service.updateAnOrganization(organizations.getAuth0Id(), updateOrganizationRequest.getName(), updateOrganizationRequest.getDisplayName());
-
-            organizations.setName(updateOrganizationRequest.getName());
-            organizations.setDisplayName(updateOrganizationRequest.getDisplayName());
+            if(updateOrganizationRequest.getName() != null) {
+                String displayName = updateOrganizationRequest.getDisplayName() != null ? updateOrganizationRequest.getDisplayName() : updateOrganizationRequest.getName();
+                auth0Service.updateAnOrganization(organizations.getAuth0Id(), updateOrganizationRequest.getName(),  displayName);
+            }
+            
+            if(updateOrganizationRequest.getName() != null) {
+                organizations.setName(updateOrganizationRequest.getName());
+            }
+            if(updateOrganizationRequest.getDisplayName() != null) {
+                organizations.setDisplayName(updateOrganizationRequest.getDisplayName());
+            }
 
             Organizations updatedOrganization = organizationsRepository.save(organizations);
 
@@ -79,7 +81,8 @@ public class OrganizationsService {
     @Transactional
     public String deleteOrganizationById(UUID id) {
         try {
-            organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            Organizations org = organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            auth0Service.deleteAnOrganization(org.getAuth0Id());
 
             organizationsRepository.deleteById(id);
             

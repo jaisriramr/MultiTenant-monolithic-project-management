@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.projectmanagement.multitenantprojectmanagement.users.embeddable.About;
 
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
@@ -40,6 +41,7 @@ public class Users {
 
     private String auth0Id;
 
+    @Embedded
     private About about;
 
     private String profilePic;

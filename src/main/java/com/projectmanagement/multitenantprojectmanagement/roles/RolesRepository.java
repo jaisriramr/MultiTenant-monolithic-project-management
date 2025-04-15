@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.roles;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,4 +15,7 @@ public interface RolesRepository extends JpaRepository<Roles, UUID> {
 
     Page<Roles> findAll(Pageable pageable);
 
+    Optional<Roles> findByAuth0Id(String auth0Id);
+
+    List<Roles> findAllByAuth0IdIn(List<String> auth0Ids);
 }
