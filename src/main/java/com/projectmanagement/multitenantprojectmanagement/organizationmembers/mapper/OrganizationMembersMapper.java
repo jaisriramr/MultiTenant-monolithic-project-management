@@ -19,6 +19,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dt
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.CreateOrganizationRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
+import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
@@ -103,6 +104,7 @@ public class OrganizationMembersMapper {
                                                 .user(user)
                                                 .organization(organization)
                                                 .roles(organizationMembers.getRole().stream().map(role -> new OrganizationMembersRoleDto(role.getId(), role.getName(), role.getAuth0Id())).collect(Collectors.toSet()))
+                                                .permissions(organizationMembers.getRole().stream().flatMap(role -> role.getPermissions().stream()).map(Permissions::getName).collect(Collectors.toSet()))
                                                 .isDeleted(organizationMembers.getIsDeleted())
                                                 .deletedAt(organizationMembers.getDeletedAt())
                                                 .deletedBy(organizationMembers.getDeletedBy())
