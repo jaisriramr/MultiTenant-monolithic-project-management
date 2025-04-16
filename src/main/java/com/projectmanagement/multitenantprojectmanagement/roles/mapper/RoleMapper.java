@@ -32,6 +32,7 @@ public class RoleMapper {
             RolesResponse roleResponse = RolesResponse.builder()
                                         .id(role.getId())
                                         .name(role.getName())
+                                        .auth0Id(role.getAuth0Id())
                                         .build();
 
             response.add(roleResponse);

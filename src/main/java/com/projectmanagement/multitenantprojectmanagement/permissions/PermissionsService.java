@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.CreatePermissionRequest;
+import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.ModulesResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionsResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.mapper.PermissionMapper;
@@ -39,6 +40,16 @@ public class PermissionsService {
             return PermissionMapper.toPermissionsResponses(permissions);
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to fetch all permissions");
+        }
+    }
+
+    public ModulesResponse getAllModules() {
+        try {
+            List<Permissions> permissions = permissionsRepository.findAll();
+
+            return PermissionMapper.toPermissionModules(permissions);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while getting all modules", e);
         }
     }
 

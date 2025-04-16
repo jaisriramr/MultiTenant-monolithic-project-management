@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.roles;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -56,6 +57,12 @@ public class RolesController {
     public ResponseEntity<RoleResponse> getRoleByAuth0Id(@PathVariable String roleId) {
         RoleResponse role = rolesService.getRoleByAuth0Id(roleId);
         return ResponseEntity.ok(role);
+    }
+
+    @GetMapping("/v1/roles/by/organization/{id}")
+    public ResponseEntity<List<RolesResponse>> getAllRolesByOrgId(@PathVariable String id) {
+        List<RolesResponse> roles = rolesService.getRolesByOrgId(id);
+        return ResponseEntity.ok(roles);
     }
 
     @PostMapping("/v1/role")

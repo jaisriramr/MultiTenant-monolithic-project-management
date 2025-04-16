@@ -80,6 +80,17 @@ public class RolesService {
         }
     }
 
+    public List<RolesResponse> getRolesByOrgId(String orgId) {
+        try {
+
+            List<Roles> roles = rolesRepository.findAllByOrganizationId(orgId);
+
+            return RoleMapper.toRolesResponse(roles);
+        }catch(Exception e) {
+            throw new RuntimeException("Error while trying to get roles by orgid", e);
+        }
+    }
+
     @Transactional
     public RoleResponse assignPermissionsToARole(UUID id, List<String> permissions) {
         try {
