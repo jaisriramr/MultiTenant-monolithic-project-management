@@ -18,7 +18,7 @@ public class RateLimitInterceptor implements HandlerInterceptor {
     private final CacheService cacheService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public boolean preHandle(HttpServletRequest request,HttpServletResponse response,Object handler) {
         String key = "rate_limit:" + request.getRemoteAddr();
         int maxRequests = 10;
         int timeWindow = 60;

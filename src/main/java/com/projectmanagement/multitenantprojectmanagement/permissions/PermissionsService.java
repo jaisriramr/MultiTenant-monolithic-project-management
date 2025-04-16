@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
@@ -77,7 +74,7 @@ public class PermissionsService {
 
             Map<String, Object> permissionRequest = Map.of("scopes", permissions);
 
-            ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createOrUpdateOrDeletePermission(permissionRequest);
+            auth0Service.createOrUpdateOrDeletePermission(permissionRequest);
             
             List<Permissions> permissionList = new ArrayList<>();
 

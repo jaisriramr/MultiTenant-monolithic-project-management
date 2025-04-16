@@ -45,10 +45,21 @@ public class OrganizationsService {
     public Organizations createAnOrganization(CreateOrganizationRequest createOrganizationRequest) {
         try {
             ResponseEntity<Map<String, Object>> auth0Response =  auth0Service.createAnOrganization(createOrganizationRequest.getName(), createOrganizationRequest.getDisplayName());
-            Organizations organization = OrganizationMapper.toEntityOrganization(createOrganizationRequest, auth0Response.getBody().get("id").toString());
 
-            Organizations savedOrganization = organizationsRepository.save(organization);
-            return savedOrganization;
+            Map<String, Object> body = auth0Response.getBody();
+
+            if(body != null) {
+                String id = (String) body.get("id");
+
+                Organizations organization = OrganizationMapper.toEntityOrganization(createOrganizationRequest, id);
+
+                Organizations savedOrganization = organizationsRepository.save(organization);
+
+                return savedOrganization;
+            }else {
+                throw new RuntimeException("Error while trying to create an organization");    
+            }
+
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to create an organization", e);
         }
@@ -92,6 +103,6 @@ public class OrganizationsService {
         }
     }
 
-    
+
 
 }

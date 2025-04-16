@@ -12,13 +12,16 @@ import org.springframework.stereotype.Repository;
 
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
+import io.micrometer.common.lang.NonNull;
+
 @Repository
 public interface OrganizationMembersRepository extends JpaRepository<OrganizationMembers, UUID> {
 
     @Query("SELECT om.organization FROM OrganizationMembers om WHERE om.user.id = :userId")
     List<Organizations> findOrganizationsByUserId(UUID userId);
 
-    Page<OrganizationMembers> findAll(Pageable pageable);
+    @NonNull
+    public Page<OrganizationMembers> findAll(Pageable pageable);
 
     Page<OrganizationMembers> findAllByUser_Auth0Id(String auth0Id, Pageable pageable);
 

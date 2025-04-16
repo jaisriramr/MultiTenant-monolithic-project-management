@@ -8,6 +8,8 @@ target/
 /target/
 !src/main/resources/static/**/target/
 
+src/main/resources/META-INF/*
+
 # === Gradle ===
 .gradle/
 build/

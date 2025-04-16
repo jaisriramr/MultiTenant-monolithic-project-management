@@ -2,8 +2,6 @@ package com.projectmanagement.multitenantprojectmanagement.auth0;
 
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -21,8 +19,6 @@ import lombok.RequiredArgsConstructor;
 public class Auth0Client {
 
     private final Auth0Config auth0Config;
-    // @Autowired
-    // @Qualifier("auth0RestTemplate")
     private final RestTemplate restTemplate;
 
     private String generateAuth0Token() {
@@ -36,14 +32,19 @@ public class Auth0Client {
 
         try {
             ResponseEntity<Map<String, Object>> response = makeApiRequest(HttpMethod.POST, url, requestBody, false);
-            if(response.getBody() != null) {
-                String token = response.getBody().get("access_token").toString();
-                return token;
+
+            Map<String, Object> body = response.getBody();
+            if (body != null) {
+                Object tokenObj = body.get("access_token");
+                if (tokenObj instanceof String token) {
+                    return token;
+                }
             }
+            return null;
+            
         }catch(Exception e) {
             throw new RuntimeException("Failed to get Auth0 token", e);
         }
-        return null;
     }
 
     public ResponseEntity<Map<String, Object>> makeApiRequest(HttpMethod method, String url, Map<String, Object> body,

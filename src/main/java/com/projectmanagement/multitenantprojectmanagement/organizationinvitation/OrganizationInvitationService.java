@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.organizationinvitation;
 
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -14,10 +13,8 @@ import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.dto.request.InviteUserToAnOrganization;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.enums.StatusForInvitation;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.mapper.OrganizationInvitationMapper;
-import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.RolesService;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
-import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;
 
 import jakarta.transaction.Transactional;

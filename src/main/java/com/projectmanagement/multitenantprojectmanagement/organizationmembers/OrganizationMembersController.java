@@ -89,6 +89,7 @@ public class OrganizationMembersController {
 
     @DeleteMapping("/v1/organization-member/{id}")
     public ResponseEntity<String> deleteOrganzationMemberById(@PathVariable UUID id) {
+        // removed static from jwtutils
         String subId = jwtUtils.getCurrentUserId();
 
         String response = organizationMembersService.deleteById(id, subId.replace("auth0|", ""));
