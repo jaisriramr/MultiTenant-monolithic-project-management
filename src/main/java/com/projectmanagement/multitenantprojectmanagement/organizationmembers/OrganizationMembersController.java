@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardInvitedUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
@@ -70,6 +71,12 @@ public class OrganizationMembersController {
     @PostMapping("/v1/organization-member/onboard")
     public ResponseEntity<UserDetailsFromOrganizationMember> onBoardUser(@RequestBody OnBoardRequest onBoardRequest) {
         UserDetailsFromOrganizationMember onBoardedUserDetails = organizationMembersService.onBoardUser(onBoardRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(onBoardedUserDetails);
+    }
+
+    @PostMapping("/v1/organization-member/onboard/invitee")
+    public ResponseEntity<UserDetailsFromOrganizationMember> onBoardInvitedUser(@RequestBody OnBoardInvitedUserRequest onboBoardInvitedUserRequest) {
+        UserDetailsFromOrganizationMember onBoardedUserDetails = organizationMembersService.onBoardInvitedUser(onboBoardInvitedUserRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(onBoardedUserDetails);
     }
 

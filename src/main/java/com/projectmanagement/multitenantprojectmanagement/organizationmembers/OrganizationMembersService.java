@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardInvitedUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
@@ -107,12 +108,55 @@ public class OrganizationMembersService {
     }
 
     @Transactional
+    public UserDetailsFromOrganizationMember onBoardInvitedUser(OnBoardInvitedUserRequest onBoardInvitedUserRequest) {
+        try {
+
+            // check if user already exists
+            Users user = userService.getUserByEmail(onBoardInvitedUserRequest.getEmail());
+
+            Organizations organization = organizationsService.getOrganizationByAuth0Id(onBoardInvitedUserRequest.getAuth0OrgId());
+
+            Roles role = rolesService.getRoleByName(onBoardInvitedUserRequest.getRoleName());
+
+            OrganizationMembers organizationMembers = new OrganizationMembers();
+            organizationMembers.setOrganization(organization);
+            if(organizationMembers.getRole() == null) {
+                organizationMembers.setRole(new HashSet<>());
+            }
+            organizationMembers.getRole().add(role);
+            organizationMembers.setJoinedAt(LocalDate.now());
+
+
+            if(user != null) {
+                organizationMembers.setUser(user);
+            }else {
+                CreateUserRequest newUser = CreateUserRequest.builder()
+                                            .name(onBoardInvitedUserRequest.getName())
+                                            .email(onBoardInvitedUserRequest.getEmail())
+                                            .auth0UserId(onBoardInvitedUserRequest.getAuth0UserId())
+                                            .build();
+
+                Users savedUser = userService.createUser(newUser);
+
+                organizationMembers.setUser(savedUser);
+            }
+            auth0Service.addMembersToAnOrg(onBoardInvitedUserRequest.getAuth0OrgId(), List.of(onBoardInvitedUserRequest.getAuth0UserId()));
+
+            auth0Service.assignRolesToUser(onBoardInvitedUserRequest.getAuth0OrgId(),onBoardInvitedUserRequest.getAuth0UserId(), List.of(role.getAuth0Id()));
+
+
+            OrganizationMembers savedOrgMember = organizationMembersRepository.save(organizationMembers);
+            return OrganizationMembersMapper.toSpecificUserOrganizationMember(savedOrgMember);
+        }catch(Exception e) {
+            throw new RuntimeException(e.getMessage().length() > 0 ? e.getMessage() :"Error while trying to onboard user",e);
+        }
+    }
+
+    @Transactional
     public UserDetailsFromOrganizationMember onBoardUser(OnBoardRequest onBoardRequest) {
         try {
 
-            // create user
-            CreateUserRequest userEntity = OrganizationMembersMapper.toUserEntity(onBoardRequest);
-            Users savedUser = userService.createUser(userEntity);
+            
 
             // create organization
             CreateOrganizationRequest organizationEntity = OrganizationMembersMapper.toOrganizationEntity(onBoardRequest);
@@ -123,15 +167,29 @@ public class OrganizationMembersService {
 
             // map user and organization to organization members and assign default role of admin
             OrganizationMembers organizationMembers = new OrganizationMembers();
-            organizationMembers.setUser(savedUser);
+
+            // check if user already exists
+            Users user = userService.getUserByEmail(onBoardRequest.getUserEmail());
+
+            // create user
+            if(user == null) {
+                CreateUserRequest userEntity = OrganizationMembersMapper.toUserEntity(onBoardRequest);
+                Users savedUser = userService.createUser(userEntity);
+                organizationMembers.setUser(savedUser);
+            }else {
+                organizationMembers.setUser(user);
+            }
+
             organizationMembers.setOrganization(savedOrg);
             if(organizationMembers.getRole() == null) {
                 organizationMembers.setRole(new HashSet<>());
             }
             organizationMembers.getRole().add(defaultRole);
 
+            auth0Service.addMembersToAnOrg(savedOrg.getAuth0Id(), List.of(onBoardRequest.getUserAuth0Id()));
+
             // assign role to user in auth0
-            auth0Service.assignRolesToUser(onBoardRequest.getUserAuth0Id(), List.of(defaultRole.getAuth0Id()));
+            auth0Service.assignRolesToUser(savedOrg.getAuth0Id() ,onBoardRequest.getUserAuth0Id(), List.of(defaultRole.getAuth0Id()));
 
             organizationMembers.setJoinedAt(LocalDate.now());
             OrganizationMembers savedOrganizationMembers = organizationMembersRepository.save(organizationMembers);
@@ -167,7 +225,7 @@ public class OrganizationMembersService {
 
             List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
 
-            auth0Service.assignRolesToUser(organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
+            auth0Service.assignRolesToUser(organizationMember.getOrganization().getAuth0Id() ,organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
 
             organizationMember.getRole().addAll(roles);
 
@@ -187,7 +245,7 @@ public class OrganizationMembersService {
 
             List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
 
-            auth0Service.removeRolesFromUser(organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
+            auth0Service.removeRolesFromUser(organizationMember.getOrganization().getAuth0Id(),organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
 
             organizationMember.getRole().removeAll(roles);
 

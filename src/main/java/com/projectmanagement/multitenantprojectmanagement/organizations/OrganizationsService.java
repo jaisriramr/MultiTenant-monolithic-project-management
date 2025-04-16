@@ -31,6 +31,16 @@ public class OrganizationsService {
             return OrganizationMapper.toOrganizationResponse(organization);
     }
 
+    public Organizations getOrganizationByAuth0Id(String auth0Id) {
+        try {
+            Organizations organization = organizationsRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
+
+            return organization;
+        }catch(Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
     public List<OrganizationsResponse> getOrganizations() {
         try {
             List<Organizations> organizations = organizationsRepository.findAll();
