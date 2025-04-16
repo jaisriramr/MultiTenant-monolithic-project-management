@@ -78,6 +78,11 @@ public class UserService {
         }
     }
 
+    public Users getUserByEmail(String email) {
+            Users user = userRepository.findByEmail(email).orElse(null);
+            return user;
+    }
+
     public UserResponseDto getUserByAuth0Id(String auth0Id) {
         try {
             Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());

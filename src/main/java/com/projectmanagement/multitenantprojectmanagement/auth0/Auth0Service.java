@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -50,6 +51,19 @@ public class Auth0Service {
                 + invitationId;
 
         auth0Client.makeApiRequest(HttpMethod.DELETE, url, null, true);
+    }
+
+    public ResponseEntity<Map<String, Object>> addMembersToAnOrg(String orgId, List<String> userIds) {
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/organizations/"+ orgId +"/members";
+        Map<String, Object> requestBody = Map.of("members", userIds);
+
+        return auth0Client.makeApiRequest(HttpMethod.POST, url, requestBody, true);
+    }
+
+    public ResponseEntity<Map<String, Object>> removeMembersFromAnOrg(String orgId, List<String> userIds) {
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/organizations/"+ orgId +"/members";
+        Map<String, Object> requestBody = Map.of("members", userIds);
+        return auth0Client.makeApiRequest(HttpMethod.DELETE, url, requestBody, true);
     }
 
     public ResponseEntity<Map<String, Object>> createAnOrganization(String name, String displayName) {
@@ -128,16 +142,16 @@ public class Auth0Service {
         return auth0Client.makeApiRequest(HttpMethod.PATCH, url, requestBody, true);
     }
 
-    public void assignRolesToUser(String userId, List<String> roles) {
-        String url = "https://" + auth0Config.getDomain() + "/api/v2/users/" + userId + "/roles";
-
+    public void assignRolesToUser(String orgId,String userId, List<String> roles) {
+        // /api/v2/organizations/:id/members/:user_id/roles
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/organizations/" + orgId + "/members/" + userId + "/roles";
         Map<String, Object> requestBody = Map.of("roles", roles);
 
         auth0Client.makeApiRequest(HttpMethod.POST, url, requestBody, true);
     }
 
-    public void removeRolesFromUser(String userId, List<String> roles) {
-        String url = "https://" + auth0Config.getDomain() + "/api/v2/users/" + userId + "/roles";
+    public void removeRolesFromUser(String orgId,String userId, List<String> roles) {
+        String url = "https://" + auth0Config.getDomain() + "/api/v2/organizations/" + orgId + "/members/" + userId + "/roles";
 
         Map<String, Object> requestBody = Map.of("roles", roles);
 
