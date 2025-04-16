@@ -20,6 +20,7 @@ import com.projectmanagement.multitenantprojectmanagement.users.dto.response.Pag
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -28,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
-
+    
     @GetMapping("/v1/users")
     public ResponseEntity<PaginatedResponseDto<UserListResponseDto>> getAllUsers(Pageable pageable) {
         PaginatedResponseDto<UserListResponseDto> users = userService.getAllUsers(pageable);
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @GetMapping("/v1/user/{id}")
-    public ResponseEntity<UserResponseDto> getUserById(@PathVariable UUID id) {
+    public ResponseEntity<UserResponseDto> getUserById(@Valid @PathVariable UUID id) {
         UserResponseDto user = userService.getUserById(id);
         return ResponseEntity.ok(user);
     }
