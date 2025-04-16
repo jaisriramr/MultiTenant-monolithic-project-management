@@ -1,7 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.permissions;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.CreatePermissionRequest;
-import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.ListPermissionByNames;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionsResponse;
 

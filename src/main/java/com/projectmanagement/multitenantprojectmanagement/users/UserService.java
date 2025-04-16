@@ -8,10 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
-import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsRepository;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.UpdateUserRequest;
@@ -28,7 +26,6 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final Auth0Service auth0Service;
     private final OrganizationMembersRepository organizationMembersRepository;
 
     public UserResponseDto getUserById(UUID id) {

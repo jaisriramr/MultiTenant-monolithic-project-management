@@ -11,7 +11,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class JWTUtils {
 
-    public static String getCurrentUserId() {
+    public String getCurrentUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication instanceof JwtAuthenticationToken jwtAuth) {
             String userId = jwtAuth.getToken().getSubject();
@@ -20,7 +20,7 @@ public class JWTUtils {
         throw new RuntimeException("Invalid token");
     }
 
-    public static String getAuth0OrgId() {
+    public String getAuth0OrgId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof JwtAuthenticationToken jwtAuth) {
             return jwtAuth.getToken().getClaim("org_id");

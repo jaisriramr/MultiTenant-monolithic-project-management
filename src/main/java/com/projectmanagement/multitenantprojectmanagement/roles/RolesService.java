@@ -1,11 +1,9 @@
 package com.projectmanagement.multitenantprojectmanagement.roles;
 
-import java.security.Permission;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
@@ -130,11 +128,18 @@ public class RolesService {
         try {
             ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(), createRoleRequest.getName());
 
-            Roles role = RoleMapper.toEntityRole(createRoleRequest, auth0Response.getBody().get("id").toString());
+            Map<String, Object> body = auth0Response.getBody();
 
-            Roles savedRole = rolesRepository.save(role);
-
-            return RoleMapper.toRoleResponse(savedRole);
+            if(body != null) {
+                String id = (String) body.get("id");
+                Roles role = RoleMapper.toEntityRole(createRoleRequest, id);
+                Roles savedRole = rolesRepository.save(role);
+                
+                return RoleMapper.toRoleResponse(savedRole);
+            }
+            else {
+                throw new RuntimeException("Error while trying to create a role");    
+            }
         }catch(Exception e) {
             throw new RuntimeException("Error while trying to create a role", e);
         }
