@@ -3,11 +3,14 @@ package com.projectmanagement.multitenantprojectmanagement.users;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.exception.GlobalExceptionHandler;
+import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
@@ -27,19 +30,15 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final OrganizationMembersRepository organizationMembersRepository;
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     public UserResponseDto getUserById(UUID id) {
-        try {
-
-            Users user = userRepository.findById(id).orElseThrow(() -> new NotFoundException());
-
-            // map role & organization to user resposne
+        logger.info("Getting User By Id: {} ", id);
+            Users user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
+            
+            logger.debug("Fetched User Details: {} ", user != null ? user.getId() : "User Not Found");
 
             return UserMapper.toUserReponse(user);
-
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch user with id {}" + id);
-        }
     }
 
     public PaginatedResponseDto<UserListResponseDto> getAllUsers(Pageable pageable) {
