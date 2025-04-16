@@ -21,7 +21,7 @@ public class Auth0Service {
     private final Auth0Client auth0Client;
     private final Auth0Config auth0Config;
 
-    public String inviteUserToOrganization(String orgId, String inviterName, String email, String roleId) {
+    public ResponseEntity<Map<String, Object>> inviteUserToOrganization(String orgId, String inviterName, String email, String roleId) {
 
         Map<String, String> inviter = Map.of("name", inviterName);
         Map<String, String> invitee = Map.of("email", email);
@@ -37,7 +37,8 @@ public class Auth0Service {
         Map<String, Object> response = auth0Client.makeApiRequest(HttpMethod.POST, url, requestBody, true).getBody();
 
         if (response != null) {
-            return response.get("id").toString();
+            // return response.get("id").toString();
+            return ResponseEntity.ok(response);
         } else {
             throw new RuntimeException("Error while sending invite to user");
 
