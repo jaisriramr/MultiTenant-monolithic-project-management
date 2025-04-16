@@ -18,6 +18,7 @@ public class UserDetailsFromOrganizationMember {
     private UserResponseDto user;
     private OrganizationResponse organization;
     private Set<OrganizationMembersRoleDto> roles;
+    private Set<String> permissions;
     private Boolean isDeleted;
     private Instant deletedAt;
     private UUID deletedBy;
