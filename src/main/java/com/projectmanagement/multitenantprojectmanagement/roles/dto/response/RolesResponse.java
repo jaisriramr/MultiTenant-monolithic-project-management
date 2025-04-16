@@ -10,4 +10,5 @@ import lombok.Data;
 public class RolesResponse {
     private UUID id;
     private String name;
+    private String auth0Id; 
 }

@@ -3,6 +3,8 @@ package com.projectmanagement.multitenantprojectmanagement.organizationinvitatio
 import java.util.Map;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,13 +29,19 @@ public class OrganizationInvitationService {
     private final OrganiationInvitationRepository organiationInvitationRepository;
     private final Auth0Service auth0Service;
     private final RolesService rolesService;
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationInvitationService.class);
+
 
     public PaginatedResponseDto<OrganizationInvitation> getAllInvitations(Pageable pageable) {
+        logger.info("Getting all invitations", pageable);
         try {
             Page<OrganizationInvitation> invitations = organiationInvitationRepository.findAll(pageable);
+            
+            logger.debug("Fetched invitations", invitations != null ? invitations.getTotalElements() : "No Invitations found");
 
             return OrganizationInvitationMapper.toPaginatedResponseDto(invitations);
         }catch(Exception e) {
+            logger.error("Error while trying to get all invitations", e.getMessage(), pageable, e);
             throw new RuntimeException("Error while trying to get all invitations",e);
         }
     }

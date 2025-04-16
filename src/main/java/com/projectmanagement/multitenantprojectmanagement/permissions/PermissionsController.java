@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.CreatePermissionRequest;
+import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.ModulesResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionsResponse;
 
@@ -49,6 +50,12 @@ public class PermissionsController {
     public ResponseEntity<List<PermissionsResponse>> getAllPermissionsByModule(@RequestParam String module) {
         List<PermissionsResponse> permissions = permissionsService.getAllPermissionsByModule(module);
         return ResponseEntity.ok(permissions);
+    }
+
+    @GetMapping("/modules")
+    public ResponseEntity<ModulesResponse> getAllModules() {
+        ModulesResponse modules = permissionsService.getAllModules();
+        return ResponseEntity.ok(modules);
     }
 
     @PostMapping("/by/names")
