@@ -56,6 +56,7 @@ public class OrganizationMembersService {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     public boolean hasPermission(String userId, List<String> permission, String orgId) {
+
         logger.info("Checking permission for the user {} ", userId);
         
         OrganizationMembers organizationMembers = organizationMembersRepository.findByUser_Auth0IdAndOrganization_Auth0Id(userId, orgId).orElseThrow(() -> new ForbiddenException("Forbidden Access"));
@@ -67,12 +68,12 @@ public class OrganizationMembersService {
         logger.debug("Fetched Permissions to check", userPermissionsDto.getPermissions().toString());
         
         if(userPermissionsDto.getPermissions().containsAll(permission)) {
-            return userPermissionsDto.getPermissions().containsAll(permission);
+            return true;
         }else {
             List<String> providedPermissions = new ArrayList<>(userPermissionsDto.getPermissions());
             throw new AccessDenied("Access denied: missing required scope", permission, providedPermissions);
         }
-        
+
     }
 
     // super admin level or support role
@@ -271,7 +272,7 @@ public class OrganizationMembersService {
             OrganizationMembers organizationMember = organizationMembersRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException());
 
-            List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
+            List<Roles> roles = rolesService.getRolesByAuth0Ids(assignRoleToUserDto.getRoleIds());
 
             auth0Service.assignRolesToUser(organizationMember.getOrganization().getAuth0Id(),
                     organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());
@@ -293,7 +294,7 @@ public class OrganizationMembersService {
             OrganizationMembers organizationMember = organizationMembersRepository.findById(id)
                     .orElseThrow(() -> new NotFoundException());
 
-            List<Roles> roles = rolesService.getAllByIds(assignRoleToUserDto.getRoleIds());
+            List<Roles> roles = rolesService.getRolesByAuth0Ids(assignRoleToUserDto.getRoleIds());
 
             auth0Service.removeRolesFromUser(organizationMember.getOrganization().getAuth0Id(),
                     organizationMember.getUser().getAuth0Id(), assignRoleToUserDto.getRoleIds());

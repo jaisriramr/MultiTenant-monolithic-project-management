@@ -1,6 +1,7 @@
 package com.projectmanagement.multitenantprojectmanagement.users;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
@@ -50,6 +51,13 @@ public class Users {
     private String coverPic;
 
     private Boolean isActive;
+
+    private Boolean isDeleted;
+
+    private UUID deletedBy;
+    
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @CreatedDate
     @Column(name="created_at", updatable = false, nullable = false)
