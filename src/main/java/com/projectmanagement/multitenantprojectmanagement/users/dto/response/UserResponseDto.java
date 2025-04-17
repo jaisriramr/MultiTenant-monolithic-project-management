@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.users.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.users.embeddable.About;
@@ -18,6 +19,9 @@ public class UserResponseDto {
     private String profilePic;
     private String coverPic;
     private boolean isActive;
+    private boolean isDeleted;
+    private UUID deletedBy;
+    private LocalDateTime deletedAt;
     // roles
     // organizations
 }

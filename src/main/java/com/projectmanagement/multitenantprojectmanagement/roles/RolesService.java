@@ -5,13 +5,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
+import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
 import com.projectmanagement.multitenantprojectmanagement.permissions.PermissionsService;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
@@ -31,75 +36,105 @@ public class RolesService {
     private final RolesRepository rolesRepository;
     private final Auth0Service auth0Service;
     private final PermissionsService permissionsService;
+    private static final Logger logger = LoggerFactory.getLogger(RolesService.class);
+    private final MaskingString maskingString;
+
+    private Roles findRoleEntityById(UUID id) {
+        logger.info("Getting Role for input ID : {} ", maskingString.maskSensitive(id.toString()));
+
+        Roles role = rolesRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Role not found for ID: " + id));
+
+        logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
+
+        return role;
+    }
 
     public RoleResponse getRoleById(UUID id) {
-        try {
-            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+        Roles role = findRoleEntityById(id);
 
-            return RoleMapper.toRoleResponse(role);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch role with id {}" + id);
-        }
+        return RoleMapper.toRoleResponse(role);
     }
-    
+
     public PaginatedRoleResponse<RolesResponse> getAllRoles(Pageable pageable) {
-        try {
-            Page<Roles> roles = rolesRepository.findAll(pageable);
+        logger.info("Getting all roles: {}", pageable);
+        Page<Roles> roles = rolesRepository.findAll(pageable);
 
-            List<RolesResponse> rolesReponse = RoleMapper.toRolesResponse(roles.getContent());
+        logger.debug("fetched {} roles", roles.getTotalElements());
 
-            return RoleMapper.toPaginatedRoleResponse(roles, rolesReponse);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch all roles", e);
-        }
+        List<RolesResponse> rolesReponse = RoleMapper.toRolesResponse(roles.getContent());
+
+        return RoleMapper.toPaginatedRoleResponse(roles, rolesReponse);
     }
 
-    public List<Roles> getAllByIds(List<String> roleIds) {
-        try {
-            return rolesRepository.findAllByAuth0IdIn(roleIds);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to fetch all the roles by id given",e);
+    public List<Roles> getRolesByAuth0Ids(List<String> roleIds) {
+        logger.info("Getting all roles by auth0Ids for input: {}", maskingString.maskSensitive(roleIds.toString()));
+
+        if (roleIds == null || roleIds.isEmpty()) {
+            throw new IllegalArgumentException("roleIds list cannot be null or empty");
         }
+
+        List<Roles> roles = rolesRepository.findAllByAuth0IdIn(roleIds);
+
+        logger.debug("Fetched {} Roles", roles.size());
+
+        return roles;
     }
 
     public Roles getRoleByName(String name) {
-        try {
-            return rolesRepository.findByName(name).orElseThrow(() -> new NotFoundException());
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to get role by name - " + name, e);
+        logger.info("Getting Role By Name: {} ", maskingString.maskSensitive(name));
+
+        if(name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Role name cannot be null or empty");
         }
+
+        Roles role = rolesRepository.findByName(name)
+                .orElseThrow(() -> new NotFoundException("Role not found with name: " + name));
+
+        logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
+
+        return role;
     }
 
     public RoleResponse getRoleByAuth0Id(String auth0Id) {
-        try {
-            Roles role = rolesRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
+        logger.info("Getting Role By Auth0Id: {} ", maskingString.maskSensitive(auth0Id));
 
-            return RoleMapper.toRoleResponse(role);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to get role by auth0 - " + auth0Id, e);
-        }
+        Roles role = rolesRepository.findByAuth0Id(auth0Id)
+                .orElseThrow(() -> new NotFoundException("Role Not found with auth0Id: " + auth0Id));
+
+        logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
+
+        return RoleMapper.toRoleResponse(role);
     }
 
     public List<RolesResponse> getRolesByOrgId(String orgId) {
-        try {
+        logger.info("Getting Roles By OrgId: {} ", maskingString.maskSensitive(orgId));
+        List<Roles> roles = rolesRepository.findAllByOrganizationId(orgId);
 
-            List<Roles> roles = rolesRepository.findAllByOrganizationId(orgId);
-
-            return RoleMapper.toRolesResponse(roles);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to get roles by orgid", e);
+        logger.debug("Fetched {} roles", roles.size());
+        if (roles.isEmpty()) {
+            throw new NotFoundException("No roles found for the given orgId");
         }
+
+        return RoleMapper.toRolesResponse(roles);
     }
 
     @Transactional
-    public RoleResponse assignPermissionsToARole(UUID id, List<String> permissions) {
+    public RoleResponse assignPermissionsToRole(UUID id, List<String> permissions) {
+        logger.info("Assigning permissions to a role with ID: {} ", maskingString.maskSensitive(id.toString()));
         try {
-
-            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            Roles role = findRoleEntityById(id);
+            logger.debug("Fetched role ID: {}", role.getId());
 
             List<Permissions> permissionsList = permissionsService.getAllPermissionsByNameList(permissions);
 
-            if(role.getPermissions() == null) {
+            logger.debug("Fetched {} permissions", permissionsList.size());
+
+            if (permissionsList.isEmpty()) {
+                throw new NotFoundException("No permissions found for the given permission names");
+            }
+
+            if (role.getPermissions() == null) {
                 role.setPermissions(new HashSet<>());
             }
 
@@ -108,19 +143,31 @@ public class RolesService {
             auth0Service.assignOrRemovePermissionToARole(role.getAuth0Id(), permissions);
 
             Roles savedRole = rolesRepository.save(role);
+            logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));
 
             return RoleMapper.toRoleResponse(savedRole);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to assign permissions to a role", e);
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Internal server error for while assigning permissions to role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+            throw new RuntimeException(
+                    "Internal server error while trying to assign permissions to a role with ID: " + id, e);
         }
     }
 
     @Transactional
-    public RoleResponse removePermissionsToARole(UUID id, List<String> permissions) {
+    public RoleResponse removePermissionsFromRole(UUID id, List<String> permissions) {
+        logger.info("Removing permissions from a role with ID: {} ", maskingString.maskSensitive(id.toString()));
         try {
-            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
+            Roles role = findRoleEntityById(id);
+
+            logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
 
             List<Permissions> permissionsList = permissionsService.getAllPermissionsByNameList(permissions);
+            if (permissionsList.isEmpty()) {
+                throw new NotFoundException("No permissions found for the given permission names");
+            }
+            logger.debug("Fetched {} permissions", permissionsList.size());
 
             role.getPermissions().removeAll(permissionsList);
 
@@ -128,63 +175,91 @@ public class RolesService {
 
             Roles savedRole = rolesRepository.save(role);
 
+            logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));
+
             return RoleMapper.toRoleResponse(savedRole);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to remove permissions to a role", e);
+        } catch (NotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Internal server error for while removing permissions from role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+            throw new RuntimeException("Error while trying to remove permissions from a role with ID: " + id, e);
         }
     }
 
     @Transactional
     public RoleResponse createRole(CreateRoleRequest createRoleRequest) {
+        logger.info("Creating Role for the given input: {} ", maskingString.maskSensitive(createRoleRequest.getName()));
         try {
-            ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(), createRoleRequest.getName());
-
+            ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(),
+                    createRoleRequest.getName());
             Map<String, Object> body = auth0Response.getBody();
 
-            if(body != null) {
+            if (body != null) {
                 String id = (String) body.get("id");
+                logger.debug("Auth0 ID: {}", maskingString.maskSensitive(id));
                 Roles role = RoleMapper.toEntityRole(createRoleRequest, id);
                 Roles savedRole = rolesRepository.save(role);
-                
+
+                logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));
+
                 return RoleMapper.toRoleResponse(savedRole);
+            } else {
+                logger.error("Auth0 response is null or unsuccessful for role creation with name: {}",
+                        maskingString.maskSensitive(createRoleRequest.getName()));
+                throw new RuntimeException("Internal server Error while trying to create a role");
             }
-            else {
-                throw new RuntimeException("Error while trying to create a role");    
-            }
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to create a role", e);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error calling Auth0 API for role creation: {}", e.getMessage(), e);
+            throw new RuntimeException("Error communicating with Auth0 while creating the role.", e);
+        } catch (Exception e) {
+            logger.error("Internal server error while trying to create a role for the given inputs: {}",
+            maskingString.maskSensitive(createRoleRequest.toString()), e);
+            throw new RuntimeException("Internal server error while trying to create a role", e);
         }
     }
 
     @Transactional
     public RoleResponse updateRole(UpdateRoleRequest updateRoleRequest) {
+        logger.info("Updating Role for the given name: {} ", maskingString.maskSensitive(updateRoleRequest.getName()));
         try {
-            Roles role = rolesRepository.findById(updateRoleRequest.getId()).orElseThrow(() -> new NotFoundException());
+            Roles role = findRoleEntityById(updateRoleRequest.getId());
+            logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
 
             role.setName(updateRoleRequest.getName());
 
             auth0Service.updateARole(role.getAuth0Id(), updateRoleRequest.getName(), updateRoleRequest.getName());
 
             Roles updateRole = rolesRepository.save(role);
+            logger.debug("Updated role ID: {}", maskingString.maskSensitive(updateRole.getId().toString()));
 
             return RoleMapper.toRoleResponse(updateRole);
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to update a role", e);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error calling Auth0 API for role updation: {}", e.getMessage(), e);
+            throw new RuntimeException(
+                    "Error communicating with Auth0 while updating the role with ID: " + updateRoleRequest.getId(), e);
+        } catch (Exception e) {
+            logger.error("Internal server error for updateRole input: {}", maskingString.maskSensitive(updateRoleRequest.getId().toString()), e);
+            throw new RuntimeException("Internal server Error while trying to update a role", e);
         }
     }
 
     @Transactional
     public String deleteRoleById(UUID id) {
+        logger.info("Deleting Role for the given ID: {} ", maskingString.maskSensitive(id.toString()));
         try {
-            Roles role = rolesRepository.findById(id).orElseThrow(() -> new NotFoundException());
-            
+            Roles role = findRoleEntityById(id);
+            logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
             auth0Service.removeRoleFromAuth0(role.getAuth0Id());
-            
+
             rolesRepository.deleteById(id);
 
             return "Role with Id " + id + " have been removed successfully!";
-        }catch(Exception e) {
-            throw new RuntimeException("Error while trying to delete a role with id {}" + id, e);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error calling Auth0 API for role deletion: {}", e.getMessage(), e);
+            throw new RuntimeException("Error communicating with Auth0 while deleting the role with ID: " + id, e);
+        } catch (Exception e) {
+            logger.error("Internal server error while trying to delete a role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+            throw new RuntimeException("Error while trying to delete a role with ID: " + id, e);
         }
     }
 

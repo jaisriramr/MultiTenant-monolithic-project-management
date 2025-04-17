@@ -4,12 +4,12 @@ import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.users.embeddable.About;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 @Data
 public class UpdateUserRequest {
-    @NotEmpty
+    @NotNull
     private UUID id;
     private String name;
     private About about;

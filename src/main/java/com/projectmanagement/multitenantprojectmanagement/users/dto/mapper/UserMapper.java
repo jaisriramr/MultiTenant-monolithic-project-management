@@ -53,6 +53,9 @@ public class UserMapper {
                 .about(user.getAbout())
                 .coverPic(user.getCoverPic())
                 .profilePic(user.getProfilePic())
+                .isDeleted(user.getIsDeleted())
+                .deletedBy(user.getDeletedBy())
+                .deletedAt(user.getDeletedAt())
                 .build();
     }
 

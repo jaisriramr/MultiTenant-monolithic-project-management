@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.users;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -9,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.GlobalExceptionHandler;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.exception.enums.Exceptions;
@@ -31,12 +33,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final OrganizationMembersRepository organizationMembersRepository;
+    private final JWTUtils jwtUtils;
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     public UserResponseDto getUserById(UUID id) {
         logger.info("Getting User By Id: {} ", id);
         Users user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found for the given User Id "+ id));
+                .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 
         logger.debug("Fetched User Details: {} ", user != null ? user.getId() : "User Not Found");
 
@@ -55,7 +58,7 @@ public class UserService {
 
         } catch (Exception e) {
             logger.error(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(),e);
+            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
         }
     }
 
@@ -64,12 +67,13 @@ public class UserService {
         try {
             List<Organizations> organizations = organizationMembersRepository.findOrganizationsByUserId(id);
 
-            logger.debug("Fetched User By UserId and its first org name ", organizations != null ? organizations.getFirst().getId() : null);
+            logger.debug("Fetched User By UserId and its first org name ",
+                    organizations != null ? organizations.getFirst().getId() : null);
 
             return UserMapper.toUserOrganizations(organizations);
 
         } catch (Exception e) {
-            logger.error("Error while trying to fetch orgs with user Id: {} ", id , e);
+            logger.error("Error while trying to fetch orgs with user Id: {} ", id, e);
             throw new RuntimeException(
                     Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
         }
@@ -79,7 +83,7 @@ public class UserService {
         logger.info("Searching users by name");
         try {
             List<Users> users = userRepository.findAllByNameContainingIgnoreCase(name).orElse(null);
-            logger.debug("Fetched Users by name " , users != null ?  users.getFirst().getId() : null);
+            logger.debug("Fetched Users by name ", users != null ? users.getFirst().getId() : null);
             return UserMapper.toUserListResponse(users);
         } catch (Exception e) {
             logger.error("Error while trying to search for users with name: {} ", name, e);
@@ -96,14 +100,9 @@ public class UserService {
 
     public UserResponseDto getUserByAuth0Id(String auth0Id) {
         logger.info("fetching user by auth0Id: {} ", auth0Id);
-        try {
-            Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
-            logger.debug("Fetched user by auth0Id: {} ", user != null ? user.getId() : null);
-            return UserMapper.toUserReponse(user);
-        } catch (Exception e) {
-            logger.error("Error while trying to fetch user by auth0id: {}", auth0Id);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
-        }
+        Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
+        logger.debug("Fetched user by auth0Id: {} ", user != null ? user.getId() : null);
+        return UserMapper.toUserReponse(user);
     }
 
     @Transactional
@@ -134,18 +133,14 @@ public class UserService {
             if (user.getAbout() == null) {
                 user.setAbout(updateUserRequest.getAbout());
             } else {
-                if (user.getAbout().getJobTitle() != null) {
+                if (updateUserRequest.getAbout().getJobTitle() != null)
                     user.getAbout().setJobTitle(updateUserRequest.getAbout().getJobTitle());
-                }
-                if (user.getAbout().getDepartment() != null) {
+                if (updateUserRequest.getAbout().getDepartment() != null)
                     user.getAbout().setDepartment(updateUserRequest.getAbout().getDepartment());
-                }
-                if (user.getAbout().getCompanyName() != null) {
+                if (updateUserRequest.getAbout().getCompanyName() != null)
                     user.getAbout().setCompanyName(updateUserRequest.getAbout().getCompanyName());
-                }
-                if (user.getAbout().getLocation() != null) {
+                if (updateUserRequest.getAbout().getLocation() != null)
                     user.getAbout().setLocation(updateUserRequest.getAbout().getLocation());
-                }
             }
 
             if (updateUserRequest.getName() != null) {
@@ -165,7 +160,7 @@ public class UserService {
             return UserMapper.toUserReponse(updatedUser);
         } catch (Exception e) {
             logger.error("Error while trying to update an user", e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
+            throw new RuntimeException("Error while trying to update an user", e);
         }
     }
 
@@ -173,14 +168,25 @@ public class UserService {
     public String deleteUserById(UUID id) {
         logger.info("Deleting user by id ", id);
         try {
-            userRepository.deleteById(id);
+            String deletingUserId = jwtUtils.getCurrentUserId();
+            // userRepository.deleteById(id);
+            Users user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User Not Found for the given Id" + id));
+            Users deletingUserDetail = userRepository.findByAuth0Id(deletingUserId).orElseThrow(() -> new NotFoundException("User Not Found for updating deleted by"));
+
+            user.setIsDeleted(true);
+            
+            user.setDeletedAt(LocalDateTime.now());
+
+            user.setDeletedBy(deletingUserDetail.getId());
+
+            userRepository.save(user);
+
             logger.debug("User id Deleted", id);
-            // make api call to auth0 to remove user from auth0
 
             return "User with id " + id + " has be removed successfully!";
         } catch (Exception e) {
             logger.error("Error while trying to delete an user with id: {}", id, e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(),e );
+            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
         }
     }
 
