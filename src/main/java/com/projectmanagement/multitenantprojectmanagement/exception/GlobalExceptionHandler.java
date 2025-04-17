@@ -1,13 +1,16 @@
 package com.projectmanagement.multitenantprojectmanagement.exception;
 
+import java.util.List;
 import java.util.TooManyListenersException;
 
 import org.apache.coyote.BadRequestException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.Local;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.config.annotation.rsocket.RSocketSecurity.AuthorizePayloadsSpec.Access;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -17,6 +20,7 @@ import org.springframework.web.client.HttpClientErrorException.Unauthorized;
 import org.springframework.web.context.request.WebRequest;
 import java.time.LocalDateTime;
 
+import com.projectmanagement.multitenantprojectmanagement.exception.dto.AccessDeniedResponse;
 import com.projectmanagement.multitenantprojectmanagement.exception.dto.ErrorResponse;
 
 import jakarta.validation.ConstraintViolationException;
@@ -32,6 +36,18 @@ public class GlobalExceptionHandler {
                 .error(status.getReasonPhrase())
                 .message(message)
                 .timestamp(LocalDateTime.now())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+    }
+
+    private AccessDeniedResponse buildAccessDenied(HttpStatus status, String message, WebRequest request, List<String> providedScopes, List<String> requiredScopes) {
+        return AccessDeniedResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(status.value())
+                .error(status.getReasonPhrase())
+                .message(message)
+                .providedScopes(providedScopes)
+                .requiredScopes(requiredScopes)
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
     }
@@ -58,7 +74,7 @@ public class GlobalExceptionHandler {
                 HttpStatus.UNAUTHORIZED);
     }
 
-    @ExceptionHandler(Forbidden.class)
+    @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ErrorResponse> handleForbidden(Forbidden ex, WebRequest request) {
         logger.warn("403 Forbidden: {}", ex.getMessage());
 
@@ -79,6 +95,14 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(buildErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request),
                 HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(AccessDenied.class)
+    public ResponseEntity<AccessDeniedResponse> handleAccessDenied(AccessDenied ex, WebRequest request) {
+        logger.error("Access Denied: {} ", ex.getMessage(), ex);
+
+        return new ResponseEntity<>(buildAccessDenied(HttpStatus.FORBIDDEN, ex.getMessage(), request, ex.getProvidedScopes(), ex.getRequiredScopes()), HttpStatus.FORBIDDEN);
+    }
+
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
@@ -108,6 +132,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(buildErrorResponse(HttpStatus.BAD_REQUEST, "Constraint Violation", request),
                 HttpStatus.BAD_REQUEST);
     }
+
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableJson(HttpMessageNotReadableException ex, WebRequest request) {

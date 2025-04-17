@@ -5,10 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.request.CreatePermissionRequest;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.ModulesResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
@@ -23,6 +23,7 @@ public class PermissionsService {
 
     private final PermissionsRepository permissionsRepository;
     private final Auth0Service auth0Service;
+    
 
     public PermissionResponse getPermissionById(UUID id) {
         try {

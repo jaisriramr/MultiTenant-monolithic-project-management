@@ -15,6 +15,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dt
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersRoleDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationResponseForOrganizationMembersDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserDetailsFromOrganizationMember;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserPermissionsDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserResponseForOrganizationMembersDto;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.CreateOrganizationRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
@@ -73,6 +74,12 @@ public class OrganizationMembersMapper {
         }
 
         return response;
+    }
+
+    public static UserPermissionsDto toUserPermissions(OrganizationMembers organizationMembers) {
+        return UserPermissionsDto.builder()
+                                .permissions(organizationMembers.getRole().stream().flatMap(role -> role.getPermissions().stream()).map(Permissions::getName).collect(Collectors.toSet()))
+                                .build();
     }
 
     public static UserDetailsFromOrganizationMember toSpecificUserOrganizationMember(OrganizationMembers organizationMembers) {
