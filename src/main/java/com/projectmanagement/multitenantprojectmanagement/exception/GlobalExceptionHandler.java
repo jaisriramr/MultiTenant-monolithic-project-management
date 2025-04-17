@@ -59,6 +59,13 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ErrorResponse> handleConflictException(ConflictException ex, WebRequest request) {
+        logger.warn("409 Conflict: {}", ex.getMessage());
+        return new ResponseEntity<>(buildErrorResponse(HttpStatus.CONFLICT, ex.getMessage(), request),
+                HttpStatus.CONFLICT);
+    }
+
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<ErrorResponse> handleNotFound(NotFoundException ex, WebRequest request) {
         logger.warn("404 Not Found: {}", ex.getMessage());

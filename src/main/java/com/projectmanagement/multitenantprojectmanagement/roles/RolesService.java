@@ -15,6 +15,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
@@ -148,7 +149,12 @@ public class RolesService {
             return RoleMapper.toRoleResponse(savedRole);
         } catch (NotFoundException e) {
             throw e;
-        } catch (Exception e) {
+        } 
+        catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error calling Auth0 API for assigning permission to a role: {}", e.getMessage(), e);
+            throw new RuntimeException("Error communicating with Auth0 while assigning permission to a role.", e);
+        }
+        catch (Exception e) {
             logger.error("Internal server error for while assigning permissions to role with ID: {}", maskingString.maskSensitive(id.toString()), e);
             throw new RuntimeException(
                     "Internal server error while trying to assign permissions to a role with ID: " + id, e);
@@ -180,7 +186,12 @@ public class RolesService {
             return RoleMapper.toRoleResponse(savedRole);
         } catch (NotFoundException e) {
             throw e;
-        } catch (Exception e) {
+        }
+        catch (HttpClientErrorException | HttpServerErrorException e) {
+            logger.error("Error calling Auth0 API for removing permission from role: {}", e.getMessage(), e);
+            throw new RuntimeException("Error communicating with Auth0 while removing permission from role.", e);
+        }
+        catch (Exception e) {
             logger.error("Internal server error for while removing permissions from role with ID: {}", maskingString.maskSensitive(id.toString()), e);
             throw new RuntimeException("Error while trying to remove permissions from a role with ID: " + id, e);
         }
@@ -190,6 +201,13 @@ public class RolesService {
     public RoleResponse createRole(CreateRoleRequest createRoleRequest) {
         logger.info("Creating Role for the given input: {} ", maskingString.maskSensitive(createRoleRequest.getName()));
         try {
+            Roles existingRole = rolesRepository.findByName(createRoleRequest.getName()).orElse(null);
+
+            if(existingRole != null) {
+                logger.error("Role with name {} already exists", maskingString.maskSensitive(createRoleRequest.getName()));
+                throw new ConflictException("Role with name " + createRoleRequest.getName() + " already exists");
+            }
+
             ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(),
                     createRoleRequest.getName());
             Map<String, Object> body = auth0Response.getBody();
@@ -208,7 +226,10 @@ public class RolesService {
                         maskingString.maskSensitive(createRoleRequest.getName()));
                 throw new RuntimeException("Internal server Error while trying to create a role");
             }
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
+        }catch(ConflictException e) {
+            throw e;
+        }
+         catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for role creation: {}", e.getMessage(), e);
             throw new RuntimeException("Error communicating with Auth0 while creating the role.", e);
         } catch (Exception e) {
@@ -233,7 +254,10 @@ public class RolesService {
             logger.debug("Updated role ID: {}", maskingString.maskSensitive(updateRole.getId().toString()));
 
             return RoleMapper.toRoleResponse(updateRole);
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
+        }catch(NotFoundException e) {
+            throw e;
+        }
+         catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for role updation: {}", e.getMessage(), e);
             throw new RuntimeException(
                     "Error communicating with Auth0 while updating the role with ID: " + updateRoleRequest.getId(), e);
@@ -254,7 +278,10 @@ public class RolesService {
             rolesRepository.deleteById(id);
 
             return "Role with Id " + id + " have been removed successfully!";
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
+        }catch(NotFoundException e) {
+            throw e;
+        }
+         catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for role deletion: {}", e.getMessage(), e);
             throw new RuntimeException("Error communicating with Auth0 while deleting the role with ID: " + id, e);
         } catch (Exception e) {
