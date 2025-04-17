@@ -2,22 +2,33 @@ package com.projectmanagement.multitenantprojectmanagement.organizationmembers;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException.Forbidden;
+import org.springframework.web.client.HttpClientErrorException.Unauthorized;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
+import com.projectmanagement.multitenantprojectmanagement.exception.AccessDenied;
+import com.projectmanagement.multitenantprojectmanagement.exception.ForbiddenException;
+import com.projectmanagement.multitenantprojectmanagement.exception.GlobalExceptionHandler;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardInvitedUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.OnBoardRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserDetailsFromOrganizationMember;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserPermissionsDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.mapper.OrganizationMembersMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
@@ -42,6 +53,27 @@ public class OrganizationMembersService {
     private final UserService userService;
     private final RolesService rolesService;
     private final Auth0Service auth0Service;
+    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+
+    public boolean hasPermission(String userId, List<String> permission, String orgId) {
+        logger.info("Checking permission for the user {} ", userId);
+        
+        OrganizationMembers organizationMembers = organizationMembersRepository.findByUser_Auth0IdAndOrganization_Auth0Id(userId, orgId).orElseThrow(() -> new ForbiddenException("Forbidden Access"));
+        
+        logger.debug("Fetched User Details ", organizationMembers.getUser().getId());
+        
+        UserPermissionsDto userPermissionsDto = OrganizationMembersMapper.toUserPermissions(organizationMembers);
+        
+        logger.debug("Fetched Permissions to check", userPermissionsDto.getPermissions().toString());
+        
+        if(userPermissionsDto.getPermissions().containsAll(permission)) {
+            return userPermissionsDto.getPermissions().containsAll(permission);
+        }else {
+            List<String> providedPermissions = new ArrayList<>(userPermissionsDto.getPermissions());
+            throw new AccessDenied("Access denied: missing required scope", permission, providedPermissions);
+        }
+        
+    }
 
     // super admin level or support role
     public PaginatedResponseDto<OrganizationMembersResponseDto> getAllMembers(Pageable pageable) {
@@ -118,6 +150,12 @@ public class OrganizationMembersService {
                 .orElseThrow(() -> new RuntimeException("Not Found Please Check your credentials"));
 
         return OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMembers);
+    }
+
+    public UserPermissionsDto getUserPermissions(String auth0UserId, String auth0OrgId) {
+        OrganizationMembers organizationMembers = organizationMembersRepository.findByUser_Auth0IdAndOrganization_Auth0Id(auth0UserId, auth0OrgId).orElseThrow(() -> new NotFoundException("Not Found"));
+
+        return OrganizationMembersMapper.toUserPermissions(organizationMembers);
     }
 
     @Transactional

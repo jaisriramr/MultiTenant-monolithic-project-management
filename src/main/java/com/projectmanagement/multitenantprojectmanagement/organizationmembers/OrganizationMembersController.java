@@ -5,6 +5,9 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -80,8 +83,9 @@ public class OrganizationMembersController {
         return ResponseEntity.status(HttpStatus.CREATED).body(onBoardedUserDetails);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:member_role\", \"assign:role\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/organization-member/{orgMemberId}/assign/roles")
-    public ResponseEntity<String> assignRolesToAnUser(@PathVariable UUID orgMemberId ,@RequestBody AssignRoleToUserDto assignRoleToUserDto) {
+    public ResponseEntity<String> assignRolesToAnUser(@PathVariable UUID orgMemberId ,@RequestBody AssignRoleToUserDto assignRoleToUserDto, @AuthenticationPrincipal Jwt jwt) {
         String response = organizationMembersService.assignRolesToAnUser(orgMemberId, assignRoleToUserDto);
 
         return ResponseEntity.ok(response);

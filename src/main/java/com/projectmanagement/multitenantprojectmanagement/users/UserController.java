@@ -43,26 +43,26 @@ public class UserController {
     }
 
     @GetMapping("/v1/user/by/auth/{id}")
-    public ResponseEntity<UserResponseDto> getUserByAuth0Id(@PathVariable String id) {
+    public ResponseEntity<UserResponseDto> getUserByAuth0Id(@Valid @PathVariable String id) {
         UserResponseDto user = userService.getUserByAuth0Id("auth0|" + id);
         return ResponseEntity.ok(user);
     }
 
     @PostMapping("/v1/user")
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody CreateUserRequest createUserRequest) {
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserRequest createUserRequest) {
         Users user = userService.createUser(createUserRequest);
         UserResponseDto userDto = UserMapper.toUserReponse(user);
         return ResponseEntity.ok(userDto);
     }
 
     @PutMapping("/v1/user")
-    public ResponseEntity<UserResponseDto> updateUser(@RequestBody UpdateUserRequest updateUserRequest) {
+    public ResponseEntity<UserResponseDto> updateUser(@Valid @RequestBody UpdateUserRequest updateUserRequest) {
         UserResponseDto user = userService.updateUser(updateUserRequest);
         return ResponseEntity.ok(user);
     }
 
     @DeleteMapping("/v1/user/{id}")
-    public ResponseEntity<String> deleteUserById(@PathVariable UUID id) {
+    public ResponseEntity<String> deleteUserById(@Valid @PathVariable UUID id) {
         String response = userService.deleteUserById(id);
         return ResponseEntity.ok(response);
     }
