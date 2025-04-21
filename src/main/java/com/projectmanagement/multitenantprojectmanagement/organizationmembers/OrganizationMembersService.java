@@ -13,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpClientErrorException.Forbidden;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
@@ -197,7 +196,7 @@ public class OrganizationMembersService {
         try {
 
             Users user = userService.getUserByEmail(onBoardInvitedUserRequest.getEmail());
-            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
+            
 
             Organizations organization = organizationsService
                     .getOrganizationByAuth0Id(onBoardInvitedUserRequest.getAuth0OrgId());
@@ -215,6 +214,7 @@ public class OrganizationMembersService {
             organizationMembers.setJoinedAt(LocalDate.now());
 
             if (user != null) {
+                logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
                 user.setIsDeleted(false);
                 user.setDeletedAt(null);
                 user.setDeletedBy(null);
@@ -270,13 +270,13 @@ public class OrganizationMembersService {
             OrganizationMembers organizationMembers = new OrganizationMembers();
 
             Users user = userService.getUserByEmail(onBoardRequest.getUserEmail());
-            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
 
             if (user == null) {
                 CreateUserRequest userEntity = OrganizationMembersMapper.toUserEntity(onBoardRequest);
                 Users savedUser = userService.createUser(userEntity);
                 organizationMembers.setUser(savedUser);
             } else {
+                logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
                 organizationMembers.setUser(user);
             }
 

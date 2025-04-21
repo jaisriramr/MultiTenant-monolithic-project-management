@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cglib.core.Local;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -23,9 +22,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizations.dto.requ
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationsResponse;
 import com.projectmanagement.multitenantprojectmanagement.organizations.mapper.OrganizationMapper;
-import com.projectmanagement.multitenantprojectmanagement.roles.RolesService;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
-import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
 
 import jakarta.transaction.Transactional;

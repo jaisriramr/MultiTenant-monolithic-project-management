@@ -2,7 +2,6 @@ package com.projectmanagement.multitenantprojectmanagement.helper;
 
 import org.springframework.stereotype.Component;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 @Component
