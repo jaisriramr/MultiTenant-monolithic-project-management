@@ -9,12 +9,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.s3.s3Service;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.UpdateUserRequest;
@@ -32,8 +35,10 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final OrganizationMembersRepository organizationMembersRepository;
-    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
     private final MaskingString maskingString;
+    private final s3Service s3Service;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public UserResponseDto getUserById(UUID id) {
         logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
@@ -41,7 +46,7 @@ public class UserService {
                 .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 
         logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
-        if (user.getIsDeleted()) {
+        if (user.getIsDeleted() != null && user.getIsDeleted()) {
             logger.error("User is deleted for the given user ID: {}", maskingString.maskSensitive(id.toString()));
             throw new NotFoundException("User not found for the given User Id " + id);
         }
@@ -229,6 +234,43 @@ public class UserService {
             logger.error("Error while trying to delete an user with ID: {}", id, e);
             throw new RuntimeException("Error while trying to delete an user with ID: " + id, e);
         }
+    }
+
+    @Transactional
+    public UserResponseDto uploadProfilePicOrCoverPic(UUID id, MultipartFile file, String type) {
+        logger.info("Uploading file for the type: {}", type);
+        try {
+
+            Users user =  userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found for the given ID: " + id));
+
+            String s3Url = s3Service.uploadFile(file, id, type.toString());
+
+            logger.debug("File uploaded to s3");
+            
+            if("profile".equals(type)) {
+                user.setProfilePic(s3Url);
+            }else if("cover".equals(type)) {
+                user.setCoverPic(s3Url);
+            }else{
+                throw new BadRequestException("Type must be either 'profile' or 'cover' ");
+            }
+
+            Users savedUser = userRepository.save(user);
+
+            logger.debug("Saved User ID: {}", maskingString.maskSensitive(savedUser.getId().toString()));
+
+            return UserMapper.toUserReponse(savedUser);
+
+        }catch(NotFoundException e) {
+            throw e;
+        }catch(BadRequestException e) {
+            throw e;
+        }catch (Exception e) {
+            // Generic error handling
+            logger.error("Error uploading file for user ID: {}", id, e);
+            throw new RuntimeException("An unexpected error occurred while uploading the file.");
+        }
+
     }
 
 }

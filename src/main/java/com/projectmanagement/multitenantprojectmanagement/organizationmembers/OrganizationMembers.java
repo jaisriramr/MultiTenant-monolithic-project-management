@@ -67,6 +67,7 @@ public class OrganizationMembers {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
     private Instant deletedAt;
