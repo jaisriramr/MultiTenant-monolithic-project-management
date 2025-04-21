@@ -110,7 +110,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(buildAccessDenied(HttpStatus.FORBIDDEN, ex.getMessage(), request, ex.getProvidedScopes(), ex.getRequiredScopes()), HttpStatus.FORBIDDEN);
     }
 
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex,
             WebRequest request) {
@@ -139,7 +138,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(buildErrorResponse(HttpStatus.BAD_REQUEST, "Constraint Violation", request),
                 HttpStatus.BAD_REQUEST);
     }
-
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleUnreadableJson(HttpMessageNotReadableException ex, WebRequest request) {

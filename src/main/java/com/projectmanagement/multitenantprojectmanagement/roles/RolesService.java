@@ -269,6 +269,9 @@ public class RolesService {
 
     @Transactional
     public String deleteRoleById(UUID id) {
+
+        // If any active user is still assigned to this role, either block deletion or force detach.
+
         logger.info("Deleting Role for the given ID: {} ", maskingString.maskSensitive(id.toString()));
         try {
             Roles role = findRoleEntityById(id);

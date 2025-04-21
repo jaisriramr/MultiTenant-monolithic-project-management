@@ -1,4 +1,4 @@
-package com.projectmanagement.multi_tenant_project_management;
+package com.projectmanagement.multitenantprojectmanagement;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

@@ -10,10 +10,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
-import com.projectmanagement.multitenantprojectmanagement.exception.GlobalExceptionHandler;
+import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
-import com.projectmanagement.multitenantprojectmanagement.exception.enums.Exceptions;
+import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
@@ -33,114 +32,153 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final OrganizationMembersRepository organizationMembersRepository;
-    private final JWTUtils jwtUtils;
-    private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+    private final MaskingString maskingString;
 
     public UserResponseDto getUserById(UUID id) {
-        logger.info("Getting User By Id: {} ", id);
+        logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
         Users user = userRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 
-        logger.debug("Fetched User Details: {} ", user != null ? user.getId() : "User Not Found");
+        logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
+        if (user.getIsDeleted()) {
+            logger.error("User is deleted for the given user ID: {}", maskingString.maskSensitive(id.toString()));
+            throw new NotFoundException("User not found for the given User Id " + id);
+        }
 
         return UserMapper.toUserReponse(user);
     }
 
     public PaginatedResponseDto<UserListResponseDto> getAllUsers(Pageable pageable) {
-        logger.info("Getting All Users From the DB: {}", pageable);
-        try {
-            Page<Users> users = userRepository.findAll(pageable);
-            logger.debug("Fetched Users from DB", users != null ? users.getContent().getFirst().getId() : null);
+        logger.info("Getting all users: {}", pageable);
 
-            List<UserListResponseDto> responseList = UserMapper.toUserListResponse(users.getContent());
+        Page<Users> users = userRepository.findAll(pageable);
 
-            return UserMapper.toUserPaginatedResponse(responseList, users);
+        logger.debug("Fetched {} users", users.getTotalElements());
 
-        } catch (Exception e) {
-            logger.error(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
-        }
+        List<UserListResponseDto> responseList = UserMapper.toUserListResponse(users.getContent());
+
+        return UserMapper.toUserPaginatedResponse(responseList, users);
     }
 
     public List<UserOrganizations> getUserOrganizations(UUID id) {
-        logger.info("Fetching all organizations by userId ", id);
-        try {
-            List<Organizations> organizations = organizationMembersRepository.findOrganizationsByUserId(id);
+        logger.info("Getting all organizations by user ID: {}", maskingString.maskSensitive(id.toString()));
 
-            logger.debug("Fetched User By UserId and its first org name ",
-                    organizations != null ? organizations.getFirst().getId() : null);
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 
-            return UserMapper.toUserOrganizations(organizations);
+        logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
 
-        } catch (Exception e) {
-            logger.error("Error while trying to fetch orgs with user Id: {} ", id, e);
-            throw new RuntimeException(
-                    Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
+        if (user.getIsDeleted()) {
+            logger.error("User is deleted for the given user ID: {}", maskingString.maskSensitive(id.toString()));
+            throw new NotFoundException("User not found for the given User Id " + id);
         }
+
+        List<Organizations> organizations = organizationMembersRepository.findOrganizationsByUserId(id);
+
+        logger.debug("Fetched {} organizations", organizations.size());
+
+        if (organizations.isEmpty()) {
+            logger.error("No organizations found for the given user ID: {}", maskingString.maskSensitive(id.toString()));
+            throw new NotFoundException("No organizations found for the given user ID " + id);
+        }
+
+        return UserMapper.toUserOrganizations(organizations);
     }
 
     public List<UserListResponseDto> searchUsersByName(String name) {
-        logger.info("Searching users by name");
-        try {
-            List<Users> users = userRepository.findAllByNameContainingIgnoreCase(name).orElse(null);
-            logger.debug("Fetched Users by name ", users != null ? users.getFirst().getId() : null);
-            return UserMapper.toUserListResponse(users);
-        } catch (Exception e) {
-            logger.error("Error while trying to search for users with name: {} ", name, e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
+        logger.info("Searching users by name: {}", maskingString.maskSensitive(name));
+
+        List<Users> users = userRepository.findAllByNameContainingIgnoreCaseAndIsDeletedFalse(name).orElse(null);
+
+        logger.debug("Fetched {} users", users.size());
+
+        if (users.isEmpty()) {
+            logger.error("No users found for the given name: {}", maskingString.maskSensitive(name));
+            throw new NotFoundException("No users found for the given name " + name);
         }
+
+        return UserMapper.toUserListResponse(users);
     }
 
     public Users getUserByEmail(String email) {
-        logger.info("fetching user by email ");
+        logger.info("Getting user by email: {} ", maskingString.maskSensitive(email));
+
         Users user = userRepository.findByEmail(email).orElse(null);
-        logger.debug("Fetched User by email ", user.getId());
+
+        logger.debug("Fetched User ID : {}", maskingString.maskSensitive(user.getId().toString()));
+
         return user;
     }
 
     public UserResponseDto getUserByAuth0Id(String auth0Id) {
-        logger.info("fetching user by auth0Id: {} ", auth0Id);
-        Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException());
-        logger.debug("Fetched user by auth0Id: {} ", user != null ? user.getId() : null);
+        logger.info("Getting user by auth0Id: {} ", maskingString.maskSensitive(auth0Id));
+
+        Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException("User not found for the given auth0Id " + auth0Id));
+        if (user.getIsDeleted()) {
+            logger.error("User is deleted for the given auth0Id: {}", maskingString.maskSensitive(auth0Id));
+            throw new NotFoundException("User not found for the given auth0Id " + auth0Id);
+        }
+
+        logger.debug("Fetched user by auth0Id: {} ", user != null ? maskingString.maskSensitive(user.getId().toString()) : null);
+
         return UserMapper.toUserReponse(user);
     }
 
     @Transactional
     public Users createUser(CreateUserRequest createUserRequest) {
-        logger.info("Creating User");
+        logger.info("Creating user for the given request: {} ", maskingString.maskSensitive(createUserRequest.toString()));
         try {
             Users user = UserMapper.toCreateUserEntity(createUserRequest);
 
+            userRepository.findByEmail(createUserRequest.getEmail()).ifPresent(existingUser -> {
+                logger.error("User already exists with the given email: {}", maskingString.maskSensitive(createUserRequest.getEmail()));
+                throw new ConflictException("User already exists with the given email: " + createUserRequest.getEmail());
+            });
+
+            userRepository.findByAuth0Id(createUserRequest.getAuth0UserId()).ifPresent(existingUser -> {
+                logger.error("User already exists with the given auth0Id: {}", maskingString.maskSensitive(createUserRequest.getAuth0UserId()));
+                throw new ConflictException("User already exists with the given auth0Id: " + createUserRequest.getAuth0UserId());
+            });
+
             Users savedUser = userRepository.save(user);
 
-            logger.debug("User Created ", savedUser.getId());
+            logger.debug("Created user ID: {}", maskingString.maskSensitive(savedUser.getId().toString()));
 
             return savedUser;
+        } catch (ConflictException e) {
+            logger.error("User already exists with the given email or auth0Id: {}", maskingString.maskSensitive(createUserRequest.toString()), e);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error while trying to create an user ", e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
+            logger.error("Error while trying to create an user: {}", maskingString.maskSensitive(createUserRequest.toString()), e);
+            throw new RuntimeException("Internal server error while trying to create a new user", e);
         }
     }
 
     @Transactional
-    public UserResponseDto updateUser(UpdateUserRequest updateUserRequest) {
-        logger.info("Updating User");
+    public UserResponseDto updateUser(UpdateUserRequest updateUserRequest
+    ) {
+        logger.info("Updating user for the given user ID: {} ", maskingString.maskSensitive(updateUserRequest.getId().toString()));
         try {
-            Users user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new NotFoundException());
+            Users user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new NotFoundException("User not found for the given ID: " + updateUserRequest.getId()));
 
-            logger.debug("Update User - Fetched User ", user != null ? user.getId() : null);
+            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
 
             if (user.getAbout() == null) {
                 user.setAbout(updateUserRequest.getAbout());
             } else {
-                if (updateUserRequest.getAbout().getJobTitle() != null)
+                if (updateUserRequest.getAbout().getJobTitle() != null) {
                     user.getAbout().setJobTitle(updateUserRequest.getAbout().getJobTitle());
-                if (updateUserRequest.getAbout().getDepartment() != null)
+                }
+                if (updateUserRequest.getAbout().getDepartment() != null) {
                     user.getAbout().setDepartment(updateUserRequest.getAbout().getDepartment());
-                if (updateUserRequest.getAbout().getCompanyName() != null)
+                }
+                if (updateUserRequest.getAbout().getCompanyName() != null) {
                     user.getAbout().setCompanyName(updateUserRequest.getAbout().getCompanyName());
-                if (updateUserRequest.getAbout().getLocation() != null)
+                }
+                if (updateUserRequest.getAbout().getLocation() != null) {
                     user.getAbout().setLocation(updateUserRequest.getAbout().getLocation());
+                }
             }
 
             if (updateUserRequest.getName() != null) {
@@ -154,39 +192,42 @@ public class UserService {
             }
 
             Users updatedUser = userRepository.save(user);
-            logger.debug("Update User - updated User details", user.getId());
+            logger.debug("Updated user ID: {} ", maskingString.maskSensitive(updatedUser.getId().toString()));
             // make api call to auth0 to update user to auth0
 
             return UserMapper.toUserReponse(updatedUser);
+        } catch (NotFoundException e) {
+            logger.error("User not found for the given ID: {}", maskingString.maskSensitive(updateUserRequest.getId().toString()), e);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error while trying to update an user", e);
+            logger.error("Error while trying to update an user with ID: {}", maskingString.maskSensitive(updateUserRequest.getId().toString()), e);
             throw new RuntimeException("Error while trying to update an user", e);
         }
     }
 
     @Transactional
-    public String deleteUserById(UUID id) {
-        logger.info("Deleting user by id ", id);
+    public String deleteUserById(UUID id
+    ) {
+        logger.info("Deleting user by ID: {} ", id);
         try {
-            String deletingUserId = jwtUtils.getCurrentUserId();
-            // userRepository.deleteById(id);
-            Users user = userRepository.findById(id).orElseThrow(() -> new NotFoundException("User Not Found for the given Id" + id));
-            Users deletingUserDetail = userRepository.findByAuth0Id(deletingUserId).orElseThrow(() -> new NotFoundException("User Not Found for updating deleted by"));
+            Users user = userRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException("User not found for the given ID: " + id));
 
             user.setIsDeleted(true);
-            
-            user.setDeletedAt(LocalDateTime.now());
 
-            user.setDeletedBy(deletingUserDetail.getId());
+            user.setDeletedAt(LocalDateTime.now());
 
             userRepository.save(user);
 
-            logger.debug("User id Deleted", id);
+            logger.debug("User with ID: {} has been deleted", id);
 
-            return "User with id " + id + " has be removed successfully!";
+            return "User with ID " + id + " has be removed successfully!";
+        } catch (NotFoundException e) {
+            logger.error("User not found for the given ID: {}", id, e);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error while trying to delete an user with id: {}", id, e);
-            throw new RuntimeException(Exceptions.INTERNAL_SERVER_ERROR.toString(), e);
+            logger.error("Error while trying to delete an user with ID: {}", id, e);
+            throw new RuntimeException("Error while trying to delete an user with ID: " + id, e);
         }
     }
 

@@ -19,6 +19,7 @@ import com.projectmanagement.multitenantprojectmanagement.permissions.dto.respon
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionResponse;
 import com.projectmanagement.multitenantprojectmanagement.permissions.dto.response.PermissionsResponse;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -59,7 +60,7 @@ public class PermissionsController {
     }
 
     @PostMapping("/by/names")
-    public ResponseEntity<List<Permissions>> getAllPermissionsByNames(@RequestBody List<String> permissionList) {
+    public ResponseEntity<List<Permissions>> getAllPermissionsByNames(@Valid @RequestBody List<String> permissionList) {
         List<Permissions> response = permissionsService.getAllPermissionsByNameList(permissionList);
         return ResponseEntity.ok(response);
     }
