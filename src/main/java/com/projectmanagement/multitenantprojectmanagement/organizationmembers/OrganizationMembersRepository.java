@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
@@ -18,7 +19,9 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
     @Query("SELECT om.organization FROM OrganizationMembers om WHERE om.user.id = :userId")
     List<Organizations> findOrganizationsByUserId(UUID userId);
 
-    public Page<OrganizationMembers> findAll(Pageable pageable);
+    @NonNull
+    @Override
+    public Page<OrganizationMembers> findAll(@NonNull Pageable pageable);
 
     Page<OrganizationMembers> findAllByUser_Auth0Id(String auth0Id, Pageable pageable);
 

@@ -28,9 +28,10 @@ public class PermissionsService {
 
     private final PermissionsRepository permissionsRepository;
     private final Auth0Service auth0Service;
-    private static final Logger logger = LoggerFactory.getLogger(PermissionsService.class);
     private final MaskingString maskingString;
-
+    
+    private static final Logger logger = LoggerFactory.getLogger(PermissionsService.class);
+    
     public PermissionResponse getPermissionById(UUID id) {
         logger.info("Getting permission for the given ID: {} ", maskingString.maskSensitive(id.toString()));
 

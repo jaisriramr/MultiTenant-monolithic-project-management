@@ -29,16 +29,16 @@ import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMappe
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
-@Service
 @RequiredArgsConstructor
+@Service
 public class RolesService {
 
     private final RolesRepository rolesRepository;
     private final Auth0Service auth0Service;
     private final PermissionsService permissionsService;
-    private static final Logger logger = LoggerFactory.getLogger(RolesService.class);
     private final MaskingString maskingString;
+    
+    private static final Logger logger = LoggerFactory.getLogger(RolesService.class);
 
     private Roles findRoleEntityById(UUID id) {
         logger.info("Getting Role for input ID : {} ", maskingString.maskSensitive(id.toString()));
