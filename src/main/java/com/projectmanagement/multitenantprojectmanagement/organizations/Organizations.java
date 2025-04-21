@@ -44,7 +44,7 @@ public class Organizations {
     private String auth0Id;
 
     @Column(name = "is_deleted")
-    private Boolean isDeleted;
+    private Boolean isDeleted = false;
 
     private UUID deletedBy;
 

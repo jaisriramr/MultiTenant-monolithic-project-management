@@ -52,7 +52,8 @@ public class Users {
 
     private Boolean isActive;
 
-    private Boolean isDeleted;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
 
     private UUID deletedBy;
 
