@@ -1,9 +1,11 @@
 package com.projectmanagement.multitenantprojectmanagement.organizations;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -25,6 +27,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "Organizations")
 public class Organizations {
+
     @Id
     @GeneratedValue(generator = "UUID")
     // @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -40,6 +43,13 @@ public class Organizations {
     private String domain;
 
     private String auth0Id;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
+
+    private UUID deletedBy;
+
+    private LocalDateTime deletedAt;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)

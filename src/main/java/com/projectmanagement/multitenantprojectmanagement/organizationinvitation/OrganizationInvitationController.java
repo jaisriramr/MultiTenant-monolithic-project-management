@@ -2,6 +2,7 @@ package com.projectmanagement.multitenantprojectmanagement.organizationinvitatio
 
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,6 +21,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizationinvitation
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.enums.StatusForInvitation;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -43,7 +45,7 @@ public class OrganizationInvitationController {
 
     @GetMapping("/v1/organization-invitation/by/organization/{orgId}")
     public ResponseEntity<PaginatedResponseDto<OrganizationInvitation>> getAllInvitationsByOrganizationAuthoId(@PathVariable String orgId, Pageable pageable) {
-        PaginatedResponseDto<OrganizationInvitation>  invitations = organizationInvitationService.getAllInvitationToAnOrganization(orgId, pageable);
+        PaginatedResponseDto<OrganizationInvitation> invitations = organizationInvitationService.getAllInvitationToAnOrganization(orgId, pageable);
         return ResponseEntity.ok(invitations);
     }
 
@@ -62,20 +64,20 @@ public class OrganizationInvitationController {
     }
 
     @PostMapping("/v1/organization-invitation")
-    public ResponseEntity<OrganizationInvitation> inviteUserToAnOrganization(@RequestBody InviteUserToAnOrganization inviteUserToAnOrganization) {
+    public ResponseEntity<OrganizationInvitation> inviteUserToAnOrganization(@Valid @RequestBody InviteUserToAnOrganization inviteUserToAnOrganization) {
         OrganizationInvitation response = organizationInvitationService.inviteUserToAnOrganization(inviteUserToAnOrganization);
         return ResponseEntity.ok(response);
     }
 
     @PutExchange("/v1/organization-invitation")
-    public ResponseEntity<String> updateInvitationStatus(@RequestBody UpdateInvitationStatus updateInvitationStatus) {
+    public ResponseEntity<String> updateInvitationStatus(@Valid @RequestBody UpdateInvitationStatus updateInvitationStatus) {
         String response = organizationInvitationService.updateInvitationStatus(updateInvitationStatus.getInvitationId(), updateInvitationStatus.getStatus());
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/v1/organization-invitation")
-    public ResponseEntity<String> revokeInvitationToAnUser(@RequestBody RevokeInvitationToAnUser revokeInvitationToAnUser){
+    public ResponseEntity<String> revokeInvitationToAnUser(@Valid @RequestBody RevokeInvitationToAnUser revokeInvitationToAnUser) {
         String response = organizationInvitationService.revokeInvitationToAnUser(revokeInvitationToAnUser.getOrgId(), revokeInvitationToAnUser.getInvitationId());
         return ResponseEntity.ok(response);
     }

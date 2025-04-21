@@ -12,7 +12,6 @@ import org.springframework.stereotype.Repository;
 
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
-
 @Repository
 public interface OrganizationMembersRepository extends JpaRepository<OrganizationMembers, UUID> {
 
