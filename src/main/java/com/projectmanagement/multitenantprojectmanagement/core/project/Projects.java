@@ -46,7 +46,9 @@ public class Projects {
 
     private String name;
 
-    private String description;
+    private String key;
+
+    private Long issueCount = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "organization_id")
