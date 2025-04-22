@@ -9,11 +9,14 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
+import com.projectmanagement.multitenantprojectmanagement.core.workflow.Workflow;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowscheme.WorkflowScheme;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
@@ -33,13 +36,16 @@ public class IssueTypeWorkflow {
     @UuidGenerator
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issue_type_id", nullable = false)
+    @Enumerated(EnumType.STRING)
     private IssueType issueType;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "workflow_id", nullable = false)
+    @JoinColumn(name = "workflow_scheme_id", nullable = false)
     private WorkflowScheme workflowScheme;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "workflow_id")
+    private Workflow workflow;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)

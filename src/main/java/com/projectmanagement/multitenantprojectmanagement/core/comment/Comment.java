@@ -11,6 +11,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.Attachment;
+import com.projectmanagement.multitenantprojectmanagement.core.commentattachment.CommentAttachment;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -58,7 +59,7 @@ public class Comment {
     private List<Comment> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
-    private List<Attachment> attachments = new ArrayList<>();
+    private List<CommentAttachment> attachments = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
