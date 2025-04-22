@@ -59,9 +59,9 @@ public class OrganizationMembersController {
         return ResponseEntity.ok(organizationMembers);
     }
 
-    @GetMapping("/v1/organization-members/organization/{orgId}/user/{userId}")
-    public ResponseEntity<UserDetailsFromOrganizationMember> getOrganizationMemberByUserIdandOrgId(@PathVariable String userId, @PathVariable String orgId) {
-        UserDetailsFromOrganizationMember organizationMember = organizationMembersService.getSpecificMember("auth0|" + userId, orgId);
+    @GetMapping("/v1/organization-members/me")
+    public ResponseEntity<UserDetailsFromOrganizationMember> getOrganizationMemberByUserIdandOrgId(@AuthenticationPrincipal Jwt jwt) {
+        UserDetailsFromOrganizationMember organizationMember = organizationMembersService.getSpecificMember();
         return ResponseEntity.ok(organizationMember);
     }
 
