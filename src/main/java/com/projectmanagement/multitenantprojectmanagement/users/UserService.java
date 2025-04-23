@@ -40,6 +40,20 @@ public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
+    public Users getUserEntity(UUID id) {
+        logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
+        Users user = userRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
+
+        logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
+        if (user.getIsDeleted() != null && user.getIsDeleted()) {
+            logger.error("User is deleted for the given user ID: {}", maskingString.maskSensitive(id.toString()));
+            throw new NotFoundException("User not found for the given User Id " + id);
+        }
+
+        return user;
+    }
+
     public UserResponseDto getUserById(UUID id) {
         logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
         Users user = userRepository.findById(id)

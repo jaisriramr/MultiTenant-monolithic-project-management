@@ -8,14 +8,20 @@ import org.springframework.data.domain.Page;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.request.CreateProjectRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectMemberMiniResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectOrgResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectUserResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
+import com.projectmanagement.multitenantprojectmanagement.core.projectMember.ProjectMember;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.ListSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.mapper.SprintMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembers;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
+import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
+import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMapper;
+import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
+import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 
 public class ProjectMapper {
 
@@ -46,6 +52,27 @@ public class ProjectMapper {
 
         List<ListSprintResponse> sprints = SprintMapper.toListSprintResponse(project.getSprints());
 
+        List<ProjectMemberMiniResponse> members = new ArrayList<>();
+        
+        for(ProjectMember projectMember: project.getProjectMembers()) {
+            UserListResponseDto mem = UserListResponseDto.builder()
+                                        .id(projectMember.getUser().getId())
+                                        .name(projectMember.getUser().getName())
+                                        .profilePic(projectMember.getUser().getProfilePic())
+                                        .build();
+            
+            
+            RoleResponse role = RoleMapper.toRoleResponse(projectMember.getRole());
+
+            ProjectMemberMiniResponse m = ProjectMemberMiniResponse.builder()
+                                            .id(projectMember.getId())
+                                            .user(mem)
+                                            .role(role)
+                                            .build();
+            
+            members.add(m);
+            }
+
         return ProjectDetailsResponse.builder()
                     .id(project.getId())
                     .name(project.getName())
@@ -55,7 +82,7 @@ public class ProjectMapper {
                     .status(project.getStatus())
                     .sprints(sprints)
                     .issues(project.getIssues())
-                    .projectMembers(project.getProjectMembers())
+                    .projectMembers(members)
                     .workflowScheme(project.getWorkflowScheme())
                     .createdAt(project.getCreatedAt())
                     .updatedAt(project.getUpdatedAt())

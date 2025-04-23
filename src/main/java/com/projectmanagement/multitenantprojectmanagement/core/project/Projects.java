@@ -40,7 +40,7 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@ToString(exclude = "sprints")
+@ToString(exclude = {"sprints","projectMembers"})
 @RequiredArgsConstructor
 @Table(name = "Projects")
 public class Projects {
