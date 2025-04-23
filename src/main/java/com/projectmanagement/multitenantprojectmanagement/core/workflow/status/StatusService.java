@@ -35,13 +35,20 @@ public class StatusService {
     private final ProjectService projectService;
     private static final Logger logger = LoggerFactory.getLogger(StatusService.class);
 
-    public StatusResponse getStatusById(UUID id) {
+    public Status getFullStatusDetails(UUID id) {
         logger.info("Getting status with ID: {}", maskingString.maskSensitive(id.toString()));
 
         Status status = statusRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Status not found for the given ID: " + id));
 
         logger.debug("Fetched status with ID: {}", maskingString.maskSensitive(status.getId().toString()));
+
+        return status;
+
+    }
+
+    public StatusResponse getStatusById(UUID id) {
+        Status status = getFullStatusDetails(id);
 
         return StatusMapper.toStatusResponse(status);
     }
@@ -113,8 +120,7 @@ public class StatusService {
     public StatusResponse deletedStatusById(UUID id) {
         logger.info("Deleting Status for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Status status = statusRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Status not found for the given ID: " + id));
+        Status status = getFullStatusDetails(id);
 
         statusRepository.delete(status);
 
