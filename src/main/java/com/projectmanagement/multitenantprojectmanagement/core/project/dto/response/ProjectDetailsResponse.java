@@ -8,6 +8,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.ProjectMember;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
+import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.ListSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowscheme.WorkflowScheme;
 
 import lombok.Builder;
@@ -22,7 +23,7 @@ public class ProjectDetailsResponse {
     private ProjectOrgResponse organization;
     private ProjectUserResponse createdBy;
     private ProjectStatus status;
-    private List<Sprint> sprints;
+    private List<ListSprintResponse> sprints;
     private List<Issue> issues;
     private List<ProjectMember> projectMembers;
     private WorkflowScheme workflowScheme;

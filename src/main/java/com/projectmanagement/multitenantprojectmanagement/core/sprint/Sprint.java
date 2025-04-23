@@ -28,10 +28,15 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString(exclude = "project")
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "Sprints")

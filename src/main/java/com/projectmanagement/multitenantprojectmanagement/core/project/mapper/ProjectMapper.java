@@ -12,6 +12,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.dto.respo
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectUserResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
+import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.ListSprintResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.sprint.mapper.SprintMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembers;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
@@ -42,11 +44,27 @@ public class ProjectMapper {
                     .profilePic(project.getCreatedBy().getProfilePic()).build();
         }
 
-        return ProjectDetailsResponse.builder().id(project.getId()).name(project.getName()).key(project.getKey())
-                .organization(org).createdBy(user).status(project.getStatus()).sprints(project.getSprints())
-                .issues(project.getIssues()).projectMembers(project.getProjectMembers())
-                .workflowScheme(project.getWorkflowScheme()).createdAt(project.getCreatedAt())
-                .updatedAt(project.getUpdatedAt()).build();
+        List<ListSprintResponse> sprints = SprintMapper.toListSprintResponse(project.getSprints());
+
+        return ProjectDetailsResponse.builder()
+                    .id(project.getId())
+                    .name(project.getName())
+                    .key(project.getKey())
+                    .organization(org)
+                    .createdBy(user)
+                    .status(project.getStatus())
+                    .sprints(sprints)
+                    .issues(project.getIssues())
+                    .projectMembers(project.getProjectMembers())
+                    .workflowScheme(project.getWorkflowScheme())
+                    .createdAt(project.getCreatedAt())
+                    .updatedAt(project.getUpdatedAt())
+                    .build();
+    }
+
+    public static ProjectsResponse toSingleProjectsResponse(Projects project) {
+        return ProjectsResponse.builder().id(project.getId()).name(project.getName()).status(project.getStatus())
+                .createdAt(project.getCreatedAt()).updatedAt(project.getUpdatedAt()).build();
     }
 
     public static PaginatedResponseDto<ProjectsResponse> toProjectsResponse(Page<Projects> projects) {
