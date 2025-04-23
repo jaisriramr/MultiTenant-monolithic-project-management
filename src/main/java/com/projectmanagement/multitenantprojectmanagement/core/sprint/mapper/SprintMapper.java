@@ -81,7 +81,6 @@ public class SprintMapper {
 
     public static SprintDetailedResponse toSprintDetailedResponse(Sprint sprint) {
         ProjectsResponse project = ProjectMapper.toSingleProjectsResponse(sprint.getProject());
-        List<Issue> issues = new ArrayList<>();
 
         return SprintDetailedResponse.builder()
                 .id(sprint.getId())

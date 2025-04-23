@@ -10,4 +10,5 @@ import lombok.Data;
 public class LabelResponse {
     private UUID id;
     private String name;
+    private String color;
 }
