@@ -53,6 +53,17 @@ public class ProjectService {
         return ProjectMapper.toProjectDetailsResponse(project);
     }
 
+    public void updateProjectIssueCount(UUID id, Long count) {
+        logger.info("Updating issue count");
+        
+        Projects project = getProjectById(id);
+
+        project.setIssueCount(count);
+
+        projectRepository.save(project);
+        logger.debug("Updated project issue count: {}", count);
+    }
+
     public PaginatedResponseDto<ProjectsResponse> getAllProjectsByOrganizationId(UUID orgId, Pageable pageable) {
         logger.info("Getting all project that belongs to a org ID: {}", maskingString.maskSensitive(orgId.toString()));
 

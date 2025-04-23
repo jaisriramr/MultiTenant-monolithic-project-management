@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.ProjectMember;
@@ -40,7 +41,7 @@ import lombok.ToString;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
-@ToString(exclude = {"sprints","projectMembers"})
+@ToString(exclude = {"sprints","projectMembers", "issues"})
 @RequiredArgsConstructor
 @Table(name = "Projects")
 public class Projects {
@@ -70,6 +71,7 @@ public class Projects {
     private List<Sprint> sprints = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<Issue> issues = new ArrayList<>();
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)

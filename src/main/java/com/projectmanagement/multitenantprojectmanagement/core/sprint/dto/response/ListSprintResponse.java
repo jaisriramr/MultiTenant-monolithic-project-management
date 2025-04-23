@@ -17,7 +17,7 @@ public class ListSprintResponse {
     private String name;
     private String goal;
     private String status;
-    private List<Issue> issues;
+    // private List<Issue> issues;
     private Instant createdAt;
     private Instant updatedAt;
 }

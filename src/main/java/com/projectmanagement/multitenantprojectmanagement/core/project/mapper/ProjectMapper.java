@@ -81,7 +81,7 @@ public class ProjectMapper {
                     .createdBy(user)
                     .status(project.getStatus())
                     .sprints(sprints)
-                    .issues(project.getIssues())
+                    // .issues(project.getIssues())
                     .projectMembers(members)
                     .workflowScheme(project.getWorkflowScheme())
                     .createdAt(project.getCreatedAt())

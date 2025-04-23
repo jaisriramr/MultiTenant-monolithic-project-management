@@ -12,6 +12,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
@@ -70,6 +71,7 @@ public class Issue {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
+    @JsonBackReference
     private Projects project;
 
     @ManyToOne(fetch = FetchType.LAZY)
