@@ -1,0 +1,26 @@
+package com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.util.UUID;
+
+import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class MinimalSprintResponse {
+
+    private UUID id;
+    private String name;
+    private LocalDate startDate;
+    private LocalDate endDate;
+    private String status;
+    private ProjectsResponse project;
+    private Instant createdAt;
+    private Instant updatedAt;
+
+}
