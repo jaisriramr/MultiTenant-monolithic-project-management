@@ -10,5 +10,5 @@ import com.projectmanagement.multitenantprojectmanagement.core.workflow.Workflow
 
 @Repository
 public interface TransitionRepository extends JpaRepository<Transition, UUID> {
-    List<Transition> findByWorkflow(Workflow workflow);
+    List<Transition> findAllByWorkflowId(UUID workflowId);
 }
