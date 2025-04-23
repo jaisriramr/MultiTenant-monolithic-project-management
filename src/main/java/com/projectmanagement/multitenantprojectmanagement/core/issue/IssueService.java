@@ -116,7 +116,7 @@ public class IssueService {
 
     }
 
-    @Transactional
+    // @Transactional
     public IssueResponse updateIssue(@Valid UpdateIssueRequest updateIssueRequest) {
         logger.info("Updating issue for the given ID: {}", maskingString.maskSensitive(updateIssueRequest.getId().toString()));
 
@@ -191,15 +191,11 @@ public class IssueService {
             issue.setReporter(user);
         }
 
-        if(updateIssueRequest.getLabels() != null) {
-            
-        }
-
         if(updateIssueRequest.getStoryPoints() != null) {
             issue.setStoryPoints(updateIssueRequest.getStoryPoints());
         }
 
-        Issue updatedIssue = issueRepository.save(issue);
+        Issue updatedIssue = issueRepository.saveAndFlush(issue);
 
         logger.debug("Updated issue ID: {}", maskingString.maskSensitive(updatedIssue.getId().toString()));
 
