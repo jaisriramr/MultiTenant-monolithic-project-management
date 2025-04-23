@@ -40,7 +40,7 @@ public class RolesService {
     
     private static final Logger logger = LoggerFactory.getLogger(RolesService.class);
 
-    private Roles findRoleEntityById(UUID id) {
+    public Roles findRoleEntityById(UUID id) {
         logger.info("Getting Role for input ID : {} ", maskingString.maskSensitive(id.toString()));
 
         Roles role = rolesRepository.findById(id)

@@ -23,10 +23,12 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
 @RequiredArgsConstructor
+@ToString(exclude = {"project", "user", "role"})
 @EntityListeners(AuditingEntityListener.class)
 @Table(name = "ProjectMembers", uniqueConstraints = @UniqueConstraint(columnNames = {"project_id", "user_id"}))
 public class ProjectMember {

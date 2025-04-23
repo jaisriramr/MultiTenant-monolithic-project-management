@@ -13,4 +13,6 @@ public interface SprintRepository extends JpaRepository<Sprint, UUID> {
 
     Optional<Sprint> findByNameAndProjectId(String name, UUID projectId);
 
+    List<Sprint> findAllByProjectId(UUID projectId);
+
 }

@@ -25,7 +25,7 @@ public class ProjectDetailsResponse {
     private ProjectStatus status;
     private List<ListSprintResponse> sprints;
     private List<Issue> issues;
-    private List<ProjectMember> projectMembers;
+    private List<ProjectMemberMiniResponse> projectMembers;
     private WorkflowScheme workflowScheme;
     private Instant createdAt;
     private Instant updatedAt;

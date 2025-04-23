@@ -2,6 +2,7 @@ package com.projectmanagement.multitenantprojectmanagement.core.sprint;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -12,6 +13,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectSe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.request.CreateSprintRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.request.UpdateSprintRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.ListSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.MinimalSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.SprintDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.mapper.SprintMapper;
@@ -41,6 +43,17 @@ public class SprintService {
 
         return sprint;
     }
+
+    public List<ListSprintResponse> getAllSprintByProjectId(UUID projectId) {
+        logger.info("Getting all sprint for the given project ID: {}", maskingString.maskSensitive(projectId.toString()));
+
+        List<Sprint> sprints = sprintRepository.findAllByProjectId(projectId);
+
+        logger.debug("Fetched {} sprints", sprints.size());
+
+        return SprintMapper.toListSprintResponse(sprints);
+    }
+
 
     @Transactional
     public SprintDetailedResponse createSprint(CreateSprintRequest createSprintRequest) {
