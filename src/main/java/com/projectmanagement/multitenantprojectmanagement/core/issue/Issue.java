@@ -74,18 +74,22 @@ public class Issue {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     @JsonBackReference
+    @ToString.Exclude
     private Projects project;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sprint_id")
+    @ToString.Exclude
     private Sprint sprint;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "assignee_id")
+    @ToString.Exclude
     private Users assignee;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id")
+    @ToString.Exclude
     private Users reporter;
 
     @ManyToMany
@@ -100,18 +104,23 @@ public class Issue {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "epic_id")
+    @ToString.Exclude
     private Epic epic;
 
     @OneToMany(mappedBy = "parentIssue", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<SubTask> subTasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<WorkLog> workLogs = new ArrayList<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Watcher> watchers = new ArrayList<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Comment> comments = new ArrayList<>();
 
     @CreatedDate

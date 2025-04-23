@@ -7,12 +7,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateIssueRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.UpdateIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.IssueResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
@@ -51,6 +53,13 @@ public class IssueController {
     @PostMapping("/v1/issue")
     public ResponseEntity<ListIssuesResponse> createIssue(@Valid @RequestBody CreateIssueRequest createIssueRequest) {
         ListIssuesResponse response = issueService.createIssue(createIssueRequest);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/v1/issue")
+    public ResponseEntity<IssueResponse> updateIssue(@Valid @RequestBody UpdateIssueRequest updateIssueRequest) {
+        IssueResponse response = issueService.updateIssue(updateIssueRequest);
 
         return ResponseEntity.ok(response);
     }
