@@ -68,7 +68,7 @@ public class SprintMapper {
                     .name(sprint.getName())
                     .goal(sprint.getGoal())
                     .status(sprint.getStatus().toString())
-                    .issues(issues)
+                    // .issues(issues)
                     .createdAt(sprint.getCreatedAt())
                     .updatedAt(sprint.getUpdatedAt())
                     .build();
@@ -90,7 +90,6 @@ public class SprintMapper {
                 .endDate(sprint.getEndDate())
                 .status(sprint.getStatus().toString())
                 .project(project)
-                .issues(issues)
                 .createdAt(sprint.getCreatedAt())
                 .updatedAt(sprint.getUpdatedAt())
                 .build();
