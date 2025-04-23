@@ -31,7 +31,7 @@ public class IssueResponse {
     private UUID sprintId;
     private Integer storyPoints;
     
-    private Set<Label> labels;
+    private Set<LabelResponse> labels;
     private List<Comment> comments;
     private List<Watcher> watchers;
     private List<WorkLog> worklogs;

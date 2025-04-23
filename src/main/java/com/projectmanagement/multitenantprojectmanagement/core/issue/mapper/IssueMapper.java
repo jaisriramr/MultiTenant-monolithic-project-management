@@ -1,6 +1,7 @@
 package com.projectmanagement.multitenantprojectmanagement.core.issue.mapper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -13,6 +14,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.respons
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
+import com.projectmanagement.multitenantprojectmanagement.core.label.mapper.LabelMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
@@ -66,16 +68,16 @@ public class IssueMapper {
                 .type(issue.getType().toString())
                 .priority(issue.getPriority().toString())
                 .projectId(issue.getProject().getId())
-                .sprintId(issue.getSprint().getId())
+                .sprintId(issue.getSprint() != null ? issue.getSprint().getId() : null)
                 .storyPoints(issue.getStoryPoints())
-                .labels(issue.getLabels())
+                .labels(LabelMapper.toSetLabelResponse(issue.getLabels()))
                 .comments(issue.getComments())
                 .watchers(issue.getWatchers())
                 .worklogs(issue.getWorkLogs())
                 .subTasks(issue.getSubTasks())
-                .epicId(issue.getEpic().getId())
-                .assignee(toListIssuesUserDto(issue.getAssignee()))
-                .reporter(toListIssuesUserDto(issue.getReporter()))
+                .epicId(issue.getEpic() != null ? issue.getEpic().getId() : null)
+                .assignee(issue.getAssignee() != null ? toListIssuesUserDto(issue.getAssignee()) : null)
+                .reporter(issue.getReporter() != null ? toListIssuesUserDto(issue.getReporter()) : null)
                 .createdAt(issue.getCreatedAt())
                 .updatedAt(issue.getUpdatedAt())
                 .build();

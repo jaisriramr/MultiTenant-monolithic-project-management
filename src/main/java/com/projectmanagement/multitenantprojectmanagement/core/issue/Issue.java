@@ -13,6 +13,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
@@ -42,6 +43,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -90,6 +92,8 @@ public class Issue {
     @JoinTable(name = "issue_labels", 
                 joinColumns = @JoinColumn(name ="issue_id"), 
                 inverseJoinColumns = @JoinColumn(name="label_id"))
+    @JsonManagedReference
+    @ToString.Exclude
     private Set<Label> labels = new HashSet<>();
 
     private Integer storyPoints;

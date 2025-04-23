@@ -9,8 +9,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateIssueRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.UpdateIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.IssueResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
@@ -37,6 +41,16 @@ public class IssueService {
     private final ProjectService projectService;
     private final SprintService sprintService;
     private final UserService userService;
+
+    public Issue getIssueById(UUID id) {
+        logger.info("Getting issue for the given ID: {}", maskingString.maskSensitive(id.toString()));
+
+        Issue issue = issueRepository.findById(id).orElseThrow(() -> new NotFoundException("Issue not found for the given ID: " + id));
+
+        logger.debug("Fetched issue Id: {}", maskingString.maskSensitive(issue.getId().toString()));
+
+        return issue;
+    }
 
     public IssueResponse getIssueByKey(String key) {
         logger.info("Getting issue for the given key: {}", key);
@@ -100,6 +114,96 @@ public class IssueService {
 
         return IssueMapper.toListIssuesResponse(savedIssue);
 
+    }
+
+    @Transactional
+    public IssueResponse updateIssue(@Valid UpdateIssueRequest updateIssueRequest) {
+        logger.info("Updating issue for the given ID: {}", maskingString.maskSensitive(updateIssueRequest.getId().toString()));
+
+        Issue issue = issueRepository.findById(updateIssueRequest.getId()).orElseThrow(() -> new NotFoundException("Issue not found for the given ID: " + updateIssueRequest.getId()));
+
+        if(updateIssueRequest.getTitle() != null) {
+            issue.setTitle(updateIssueRequest.getTitle());
+        }
+
+        if(updateIssueRequest.getDescription() != null) {
+            issue.setDescription(updateIssueRequest.getDescription());
+        }
+
+        if(updateIssueRequest.getStatus() != null) {
+            if("TO_DO".equals(updateIssueRequest.getStatus())) {
+                issue.setStatus(IssueStatus.TO_DO);
+            }else if("IN_PROGRESS".equals(updateIssueRequest.getStatus())) {
+                issue.setStatus(IssueStatus.IN_PROGRESS);
+            }else if("IN_REVIEW".equals(updateIssueRequest.getStatus())) {
+                issue.setStatus(IssueStatus.IN_REVIEW);
+            }else if("DONE".equals(updateIssueRequest.getStatus())) {
+                issue.setStatus(IssueStatus.DONE);
+            }else {
+                throw new IllegalArgumentException("Given status is not allowed");
+            }
+        }
+
+        if(updateIssueRequest.getType() != null) {
+            if("TASK".equals(updateIssueRequest.getType())) {
+                issue.setType(IssueType.TASK);
+            }else if("BUG".equals(updateIssueRequest.getType())) {
+                issue.setType(IssueType.BUG);
+            }else if("STORY".equals(updateIssueRequest.getType())) {
+                issue.setType(IssueType.STORY);
+            }else if("EPIC".equals(updateIssueRequest.getType())) {
+                issue.setType(IssueType.EPIC);
+            }else {
+                throw new IllegalArgumentException("Given type is not allowed");
+            }
+        }
+
+        if(updateIssueRequest.getPriority() != null) {
+            if("LOW".equals(updateIssueRequest.getPriority())) {
+                issue.setPriority(IssuePriority.LOW);
+            }else if("MEDIUM".equals(updateIssueRequest.getPriority())) {
+                issue.setPriority(IssuePriority.MEDIUM);
+            }else if("HIGH".equals(updateIssueRequest.getPriority())) {
+                issue.setPriority(IssuePriority.HIGH);
+            }else if("CRITICAL".equals(updateIssueRequest.getPriority())) {
+                issue.setPriority(IssuePriority.CRITICAL);
+            }else {
+                throw new IllegalArgumentException("Given type is not allowed");
+            }
+        }
+
+        if(updateIssueRequest.getSprintId() != null) {
+
+            Sprint sprint = sprintService.getSprintEntity(updateIssueRequest.getSprintId());
+
+            issue.setSprint(sprint);
+        }
+
+        if(updateIssueRequest.getAssigneeId() != null) {
+            Users user = userService.getUserEntity(updateIssueRequest.getAssigneeId());
+
+            issue.setAssignee(user);
+        }
+
+        if(updateIssueRequest.getReporterId() != null) {
+            Users user = userService.getUserEntity(updateIssueRequest.getReporterId());
+
+            issue.setReporter(user);
+        }
+
+        if(updateIssueRequest.getLabels() != null) {
+            
+        }
+
+        if(updateIssueRequest.getStoryPoints() != null) {
+            issue.setStoryPoints(updateIssueRequest.getStoryPoints());
+        }
+
+        Issue updatedIssue = issueRepository.save(issue);
+
+        logger.debug("Updated issue ID: {}", maskingString.maskSensitive(updatedIssue.getId().toString()));
+
+        return IssueMapper.toIssueResponse(updatedIssue);
     }
 
 }

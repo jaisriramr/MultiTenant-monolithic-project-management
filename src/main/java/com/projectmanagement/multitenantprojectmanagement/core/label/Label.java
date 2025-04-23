@@ -10,6 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 
@@ -25,6 +26,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
@@ -46,6 +48,8 @@ public class Label {
     private Projects project;
 
     @ManyToMany(mappedBy = "labels")
+    @JsonBackReference
+    @ToString.Exclude
     private List<Issue> issues = new ArrayList<>();
 
     @CreatedDate
