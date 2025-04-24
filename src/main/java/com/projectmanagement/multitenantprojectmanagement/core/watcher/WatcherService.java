@@ -19,6 +19,7 @@ import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -60,6 +61,7 @@ public class WatcherService {
         return WatcherMapper.toListWatcherResponses(watchers);
     }
 
+    @Transactional
     public WatcherResponse createWatcher(UUID issueId, UUID userId) {
         logger.info("Creating watcher");
 
@@ -78,6 +80,7 @@ public class WatcherService {
         return WatcherMapper.toWatcherResponse(savedWathWatcher);
     }
 
+    @Transactional
     public WatcherResponse removeWatcher(UUID id) {
         logger.info("Deleting watcher");
 

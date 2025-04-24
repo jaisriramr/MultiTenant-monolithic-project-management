@@ -13,6 +13,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.label.dto.respons
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.Watcher;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.dto.response.WatcherResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
+import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
 
 import lombok.Builder;
 import lombok.Data;
@@ -34,7 +35,7 @@ public class IssueResponse {
     private Set<LabelResponse> labels;
     private List<Comment> comments;
     private List<WatcherResponse> watchers;
-    private List<WorkLog> worklogs;
+    private WorklogResponse worklog;
     // private List<ListIssuesResponse> subTasks;
     private UUID epicId;
 

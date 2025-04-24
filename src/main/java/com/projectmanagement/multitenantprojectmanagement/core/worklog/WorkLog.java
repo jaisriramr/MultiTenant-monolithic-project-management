@@ -19,6 +19,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -40,8 +41,8 @@ public class WorkLog {
 
     private LocalDateTime startedDateTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "issue_id")
+    @OneToOne
+    @JoinColumn(name = "issue_id", unique = true, nullable = false)
     private Issue issue;
 
     @ManyToOne(fetch = FetchType.LAZY)

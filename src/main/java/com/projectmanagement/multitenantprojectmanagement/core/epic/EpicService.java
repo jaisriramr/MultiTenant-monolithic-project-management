@@ -14,6 +14,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -36,6 +37,7 @@ public class EpicService {
         return epic;
     }
 
+    @Transactional
     public Epic createEpicEntity(@Valid CreateEpicRequest createEpicRequest) {
         logger.info("Creating epic");
 

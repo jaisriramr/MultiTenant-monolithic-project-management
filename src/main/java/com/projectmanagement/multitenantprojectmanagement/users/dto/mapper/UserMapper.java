@@ -59,6 +59,14 @@ public class UserMapper {
                 .build();
     }
 
+    public static UserListResponseDto toUserSingleListResponse(Users user) {
+        return  UserListResponseDto.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .profilePic(user.getProfilePic())
+                .build();
+    }
+
     public static List<UserListResponseDto> toUserListResponse(List<Users> users) {
         List<UserListResponseDto> response = new ArrayList<>();
 
