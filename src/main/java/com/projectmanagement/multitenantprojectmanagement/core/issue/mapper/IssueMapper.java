@@ -22,6 +22,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.label.mapper.Labe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
+import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
+import com.projectmanagement.multitenantprojectmanagement.core.worklog.mapper.WorklogMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -130,7 +132,7 @@ public class IssueMapper {
                 .labels(LabelMapper.toSetLabelResponse(issue.getLabels()))
                 .comments(issue.getComments())
                 .watchers(WatcherMapper.toListWatcherResponses(issue.getWatchers()))
-                .worklogs(issue.getWorkLogs())
+                .worklog(issue.getWorkLog() != null ? WorklogMapper.toWorklogResponse(issue.getWorkLog()) : null)
                 .epicId(issue.getEpic() != null ? issue.getEpic().getId() : null)
                 .assignee(issue.getAssignee() != null ? toListIssuesUserDto(issue.getAssignee()) : null)
                 .reporter(issue.getReporter() != null ? toListIssuesUserDto(issue.getReporter()) : null)

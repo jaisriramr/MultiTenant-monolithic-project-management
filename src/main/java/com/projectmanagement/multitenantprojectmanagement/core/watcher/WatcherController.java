@@ -3,6 +3,7 @@ package com.projectmanagement.multitenantprojectmanagement.core.watcher;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,31 +25,31 @@ public class WatcherController {
     private final WatcherService watcherService;
 
     @GetMapping("/v1/watcher/{id}")
-    public WatcherResponse getWatcherById(@PathVariable UUID id) {
+    public ResponseEntity<WatcherResponse> getWatcherById(@PathVariable UUID id) {
         WatcherResponse watcherResponse = watcherService.getWatcherById(id);
 
-        return watcherResponse;
+        return ResponseEntity.ok(watcherResponse);
     }
 
     @GetMapping("/v1/watcher/{id}/issue")
-    public List<WatcherResponse> getWatchersByIssueId(@PathVariable UUID id) {
+    public ResponseEntity<List<WatcherResponse>> getWatchersByIssueId(@PathVariable UUID id) {
         List<WatcherResponse> watcherResponses = watcherService.getWatchersByIssueId(id);
 
-        return watcherResponses;
+        return ResponseEntity.ok(watcherResponses);
     }
 
     @PostMapping("/v1/watcher")
-    public WatcherResponse createWatcher(@RequestBody WatcherRequest watcherRequest) {
+    public ResponseEntity<WatcherResponse> createWatcher(@RequestBody WatcherRequest watcherRequest) {
         WatcherResponse watcherResponse = watcherService.createWatcher(watcherRequest.getIssueId(), watcherRequest.getUserId());
 
-        return watcherResponse;
+        return ResponseEntity.ok(watcherResponse);
     }
 
     @DeleteMapping("/v1/watcher/{id}")
-    public WatcherResponse deleteWatcherById(@PathVariable UUID id) {
+    public ResponseEntity<WatcherResponse> deleteWatcherById(@PathVariable UUID id) {
         WatcherResponse watcherResponse = watcherService.removeWatcher(id);
 
-        return watcherResponse;
+        return ResponseEntity.ok(watcherResponse);
     }
 
 }

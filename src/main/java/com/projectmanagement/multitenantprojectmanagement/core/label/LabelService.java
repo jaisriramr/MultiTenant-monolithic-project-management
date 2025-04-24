@@ -20,6 +20,7 @@ import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundExce
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -57,6 +58,7 @@ public class LabelService {
         return LabelMapper.toPaginatedResponse(labels);
     }
 
+    @Transactional
     public Label createLabel(CreateLabelRequest createLabelRequest) {
 
         logger.info("Creating label");
@@ -74,6 +76,7 @@ public class LabelService {
         return savedLabel;
     }
 
+    @Transactional
     public LabelResponse deleteLabelById(UUID id) {
         logger.info("Deleting label for the given ID: {}", maskingString.maskSensitive(id.toString()));
 

@@ -39,6 +39,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -118,9 +119,9 @@ public class Issue {
     // @ToString.Exclude
     // private List<Issue> subTasks = new ArrayList<>();
 
-    @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "issue", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private List<WorkLog> workLogs = new ArrayList<>();
+    private WorkLog workLog;
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
     @ToString.Exclude
