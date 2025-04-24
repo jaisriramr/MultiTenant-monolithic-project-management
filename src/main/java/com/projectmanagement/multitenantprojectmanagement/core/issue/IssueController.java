@@ -109,4 +109,18 @@ public class IssueController {
         return ResponseEntity.ok(response);
     }
 
+    @PutMapping("/v1/issue/{id}/assign/{userId}/user")
+    public ResponseEntity<String> assigneeUserToAnIssue(@PathVariable UUID id, @PathVariable UUID userId) {
+        issueService.assigneeUserToAnIssue(id, userId);
+
+        return ResponseEntity.ok("User successfully assigned to the given User ID: "+ id);
+    }
+
+    @PutMapping("/v1/issue/{id}/unassign")
+    public ResponseEntity<String> unassigneeUserToAnIssue(@PathVariable UUID id) {
+        issueService.unAssigneeUserToAnIssue(id);
+
+        return ResponseEntity.ok("User successfully removed to the given User ID: "+ id);
+    }
+
 }

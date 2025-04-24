@@ -105,6 +105,34 @@ public class IssueService {
     }
 
     @Transactional
+    public void assigneeUserToAnIssue(UUID issueId, UUID userId) {
+        logger.info("Assigning user to an issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
+
+        Issue issue = getIssueById(issueId);
+
+        Users user = userService.getUserEntity(userId);
+
+        issue.setAssignee(user);
+
+        issueRepository.save(issue);
+
+        logger.debug("User Assigned to the given issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
+    }
+
+    @Transactional
+    public void unAssigneeUserToAnIssue(UUID issueId) {
+        logger.info("Assigning user to an issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
+
+        Issue issue = getIssueById(issueId);
+
+        issue.setAssignee(null);
+
+        issueRepository.save(issue);
+
+        logger.debug("User Assigned to the given issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
+    }
+
+    @Transactional
     public ListIssuesResponse linkIssueToEpic(UUID epicParentId, UUID issueId) {
         logger.info("Linking issue with ID: {} to epic ID: {}", maskingString.maskSensitive(issueId.toString()), maskingString.maskSensitive(epicParentId.toString()));
 
