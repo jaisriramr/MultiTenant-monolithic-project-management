@@ -107,9 +107,17 @@ public class Issue {
     @ToString.Exclude
     private Epic epic;
 
-    @OneToMany(mappedBy = "parentIssue", cascade = CascadeType.ALL)
-    @ToString.Exclude
-    private List<SubTask> subTasks = new ArrayList<>();
+    @Column(name = "is_sub_task", nullable = false)
+    private Boolean isSubTask;
+
+    // @ManyToOne(fetch = FetchType.LAZY)
+    // @JoinColumn(name = "parent_issue_id")
+    // @ToString.Exclude
+    // private Issue parentIssue;
+
+    // @OneToMany(mappedBy = "parentIssue", cascade = CascadeType.ALL)
+    // @ToString.Exclude
+    // private List<Issue> subTasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "issue", cascade = CascadeType.ALL)
     @ToString.Exclude

@@ -6,8 +6,12 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
+import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
+import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateEpicIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateIssueRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateSubIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.IssueResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesUserDto;
@@ -49,6 +53,56 @@ public class IssueMapper {
         return issue;
     }
 
+    public static Issue toEpicIssueEntity(CreateEpicIssueRequest createEpicIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Epic epic) {
+        Issue issue = new Issue();
+        issue.setTitle(createEpicIssueRequest.getTitle());
+        issue.setKey(key);
+        issue.setProject(project);
+        issue.setReporter(reporter);
+        issue.setSprint(sprint);
+        issue.setStatus(IssueStatus.TO_DO);
+        issue.setPriority(IssuePriority.MEDIUM);
+        issue.setType(IssueType.EPIC);
+        issue.setEpic(epic);
+
+        return issue;
+    }
+
+    public static Issue toSubIssueEntity(CreateSubIssueRequest createSubIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Issue parent) {
+        Issue issue = new Issue();
+        issue.setTitle(createSubIssueRequest.getTitle());
+        
+        issue.setKey(key);
+        issue.setProject(project);
+        issue.setReporter(reporter);
+        issue.setSprint(sprint);
+        issue.setStatus(IssueStatus.TO_DO);
+        issue.setPriority(IssuePriority.MEDIUM);
+        issue.setIsSubTask(true);
+
+        if("TASK".equals(createSubIssueRequest.getType())) {
+            issue.setType(IssueType.TASK);
+        }else if("BUG".equals(createSubIssueRequest.getType())) {
+            issue.setType(IssueType.BUG);
+        }else if("STORY".equals(createSubIssueRequest.getType())) {
+            issue.setType(IssueType.STORY);
+        }else if("EPIC".equals(createSubIssueRequest.getType())) {
+            issue.setType(IssueType.EPIC);
+        }else {
+            throw new IllegalArgumentException("The given type is not allowed");
+        }
+
+        return issue;
+    }
+
+    public static CreateEpicRequest toCreateEpicIssueRequest(CreateEpicIssueRequest createEpicIssueRequest) {
+        return CreateEpicRequest.builder()
+                .name(createEpicIssueRequest.getTitle())
+                .projectId(createEpicIssueRequest.getProjectId())
+                .color(createEpicIssueRequest.getColor())
+                .build();
+    }
+
     public static ListIssuesUserDto toListIssuesUserDto(Users user) {
         return ListIssuesUserDto.builder()
                 .id(user.getId())
@@ -74,7 +128,6 @@ public class IssueMapper {
                 .comments(issue.getComments())
                 .watchers(issue.getWatchers())
                 .worklogs(issue.getWorkLogs())
-                .subTasks(issue.getSubTasks())
                 .epicId(issue.getEpic() != null ? issue.getEpic().getId() : null)
                 .assignee(issue.getAssignee() != null ? toListIssuesUserDto(issue.getAssignee()) : null)
                 .reporter(issue.getReporter() != null ? toListIssuesUserDto(issue.getReporter()) : null)

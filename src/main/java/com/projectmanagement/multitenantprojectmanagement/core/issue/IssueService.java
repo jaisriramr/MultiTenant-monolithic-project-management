@@ -1,5 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.core.issue;
 
+import java.util.ArrayList;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -8,7 +9,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
+import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
+import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateEpicIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateIssueRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateSubIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.UpdateIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.IssueResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
@@ -16,11 +22,14 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.Issue
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
+import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.IssueRelationService;
+import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.SprintService;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
+import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
@@ -41,6 +50,8 @@ public class IssueService {
     private final ProjectService projectService;
     private final SprintService sprintService;
     private final UserService userService;
+    private final EpicService epicService;
+    private final IssueRelationService issueRelationService;
 
     public Issue getIssueById(UUID id) {
         logger.info("Getting issue for the given ID: {}", maskingString.maskSensitive(id.toString()));
@@ -65,7 +76,7 @@ public class IssueService {
     public PaginatedResponseDto<ListIssuesResponse> getIssuesesBySprintId(UUID sprintId, Pageable pageable) {
         logger.info("Getting all issues associated with sprint ID: {}", maskingString.maskSensitive(sprintId.toString()));
 
-        Page<Issue> issues = issueRepository.findAllBySprintId(sprintId, pageable);
+        Page<Issue> issues = issueRepository.findAllBySprintIdAndIsSubTaskFalseAndTypeNot(sprintId, IssueType.EPIC, pageable);
 
         logger.debug("Fetched {} issues", issues.getTotalElements());
 
@@ -76,11 +87,134 @@ public class IssueService {
     public PaginatedResponseDto<ListIssuesResponse> getBacklogIssues(UUID projectId, Pageable pagable) {
         logger.info("Getting backlog issues for project ID: {}", maskingString.maskSensitive(projectId.toString()));
 
-        Page<Issue> issues = issueRepository.findAllByProjectIdAndSprintIsNull(projectId, pagable);
+        Page<Issue> issues = issueRepository.findAllByProjectIdAndSprintIsNullAndIsSubTaskFalseAndTypeNot(projectId,IssueType.EPIC, pagable);
 
         logger.debug("Fetched {} issues", issues.getTotalElements());
 
         return IssueMapper.toPaginatedResponse(issues);
+    }
+
+    public PaginatedResponseDto<ListIssuesResponse> getIssueChildWorks(UUID parentId, Pageable pageable) {
+        PaginatedResponseDto<ListIssuesResponse> issues = issueRelationService.findChildWorksByParentId(parentId, pageable);
+
+        return issues;
+    }
+
+    @Transactional
+    public ListIssuesResponse linkIssueToEpic(UUID epicParentId, UUID issueId) {
+        logger.info("Linking issue with ID: {} to epic ID: {}", maskingString.maskSensitive(issueId.toString()), maskingString.maskSensitive(epicParentId.toString()));
+
+        Issue parent = getIssueById(epicParentId);
+
+        if(!"EPIC".equals(parent.getType().toString())) {
+            throw new BadRequestException("Given parent id is not epic");
+        }
+
+        Issue childWork = getIssueById(issueId);
+
+        if(parent.getEpic().getLinkedIssues() == null) {
+            parent.getEpic().setLinkedIssues(new ArrayList<>());
+        }
+
+        childWork.setEpic(parent.getEpic());
+
+        Issue savedIssue = issueRepository.save(childWork);
+
+        issueRelationService.CreateIssueRelation(parent, childWork, IssueRelationType.SUB_TASK);
+
+        logger.debug("Linked child work ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        return IssueMapper.toListIssuesResponse(savedIssue);
+
+    }
+
+    @Transactional
+    public ListIssuesResponse unlinkIssueToEpic(UUID issueId) {
+        logger.info("UnLinking issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
+
+        Issue childWork = getIssueById(issueId);
+
+        childWork.setEpic(null);
+
+        Issue savedIssue = issueRepository.save(childWork);
+
+        issueRelationService.deleteIssueRelationById(issueId);
+
+        logger.debug("UnLinked child work ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        return IssueMapper.toListIssuesResponse(savedIssue);
+
+    }
+
+    @Transactional
+    public ListIssuesResponse createEpicIssue(@Valid CreateEpicIssueRequest createEpicIssueRequest) {
+
+        logger.info("Creating epic issue for the given project ID: {}", maskingString.maskSensitive(createEpicIssueRequest.getProjectId().toString()));
+
+        Projects project = projectService.getProjectById(createEpicIssueRequest.getProjectId());
+
+        Long issueCount = project.getIssueCount() + 1;
+        
+        project.setIssueCount(issueCount);
+        projectService.updateProjectIssueCount(createEpicIssueRequest.getProjectId(), issueCount);
+
+        String key = project.getKey() + "-" + issueCount;
+
+        Users reporter = userService.getUserEntity(createEpicIssueRequest.getReporterId());
+
+        Sprint sprint = null;
+
+        if(createEpicIssueRequest.getSprintId() != null) {
+            sprint = sprintService.getSprintEntity(createEpicIssueRequest.getSprintId());
+        }
+
+        CreateEpicRequest epicRequest = IssueMapper.toCreateEpicIssueRequest(createEpicIssueRequest);
+
+        Epic epic = epicService.createEpicEntity(epicRequest);
+
+        Issue issue = IssueMapper.toEpicIssueEntity(createEpicIssueRequest, project, sprint, reporter, key, epic);
+
+        Issue savedIssue = issueRepository.save(issue);
+
+        logger.debug("Saved epic issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        return IssueMapper.toListIssuesResponse(savedIssue);
+
+    }
+
+    @Transactional
+    public ListIssuesResponse createSubIssue(@Valid CreateSubIssueRequest createSubIssueRequest) {
+        logger.info("Creating sub issue for the given project ID: {}", maskingString.maskSensitive(createSubIssueRequest.getProjectId().toString()));
+
+        Projects project = projectService.getProjectById(createSubIssueRequest.getProjectId());
+
+        Issue Parent = getIssueById(createSubIssueRequest.getIssueId());
+
+        Long issueCount = project.getIssueCount() + 1;
+        
+        project.setIssueCount(issueCount);
+        projectService.updateProjectIssueCount(createSubIssueRequest.getProjectId(), issueCount);
+
+
+        String key = project.getKey() + "-" + issueCount;
+
+        Users reporter = userService.getUserEntity(createSubIssueRequest.getReporterId());
+
+        Sprint sprint = null;
+
+        if(createSubIssueRequest.getSprintId() != null) {
+            sprint = sprintService.getSprintEntity(createSubIssueRequest.getSprintId());
+        }
+
+        Issue issue = IssueMapper.toSubIssueEntity(createSubIssueRequest, project, sprint,reporter, key, Parent);
+        
+        Issue savedIssue = issueRepository.save(issue);
+
+        issueRelationService.CreateIssueRelation(Parent, savedIssue, IssueRelationType.SUB_TASK);
+
+        logger.debug("Saved sub issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        return IssueMapper.toListIssuesResponse(savedIssue);
     }
 
     @Transactional
