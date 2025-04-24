@@ -1,0 +1,97 @@
+package com.projectmanagement.multitenantprojectmanagement.core.watcher;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
+
+import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.event.IssueEvent;
+import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.watcher.dto.response.WatcherResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
+import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
+import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.users.UserService;
+import com.projectmanagement.multitenantprojectmanagement.users.Users;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class WatcherService {
+
+    private final WatcherRepository watcherRepository;
+    private static final Logger logger = LoggerFactory.getLogger(WatcherService.class);
+    private final MaskingString maskingString;
+    private final IssueService issueService;
+    private final UserService userService;
+
+    @EventListener
+    public void createWatcherViaEvent(IssueEvent event) {
+        UUID issueId = event.getIssueId();
+        UUID reporterId = event.getReportId();
+
+        createWatcher(issueId, reporterId);
+    }
+
+    public WatcherResponse getWatcherById(UUID id) {
+        logger.info("Getting watcher by ID: {}", maskingString.maskSensitive(id.toString()));
+
+        Watcher watcher = watcherRepository.findById(id).orElseThrow(() -> new NotFoundException("Watcher not found for the given ID: " + id));
+
+        logger.debug("Fetched watcher ID: {}", maskingString.maskSensitive(watcher.getId().toString()));
+
+        return WatcherMapper.toWatcherResponse(watcher);
+
+    }
+
+    public List<WatcherResponse> getWatchersByIssueId(UUID id) {
+        logger.info("Getting watchers for the given issue ID: {}",maskingString.maskSensitive(id.toString()));
+
+        List<Watcher> watchers = watcherRepository.findAllByIssueId(id);
+
+        logger.debug("Fetched {} watchers", watchers.size());
+
+        return WatcherMapper.toListWatcherResponses(watchers);
+    }
+
+    public WatcherResponse createWatcher(UUID issueId, UUID userId) {
+        logger.info("Creating watcher");
+
+        Issue issue = issueService.getIssueById(issueId);
+
+        Users user = userService.getUserEntity(userId);
+
+        Watcher watcher = new Watcher();
+        watcher.setIssue(issue);
+        watcher.setUser(user);
+
+        Watcher savedWathWatcher = watcherRepository.save(watcher);
+
+        logger.debug("Saved watched ID: {}", maskingString.maskSensitive(savedWathWatcher.getId().toString()));
+
+        return WatcherMapper.toWatcherResponse(savedWathWatcher);
+    }
+
+    public WatcherResponse removeWatcher(UUID id) {
+        logger.info("Deleting watcher");
+
+        Watcher watcher = watcherRepository.findById(id).orElseThrow(() -> new NotFoundException("Watcher not found for the given ID: "+ id));
+
+        logger.debug("Fetched watcher ID: {}", maskingString.maskSensitive(id.toString()));
+
+        watcherRepository.delete(watcher);
+
+        logger.debug("Deleted watcher for the given ID: {}", maskingString.maskSensitive(id.toString()));
+
+        return WatcherMapper.toWatcherResponse(watcher);
+    }
+
+
+
+}

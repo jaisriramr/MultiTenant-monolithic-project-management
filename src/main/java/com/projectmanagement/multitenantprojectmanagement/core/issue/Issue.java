@@ -22,7 +22,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.Issue
 import com.projectmanagement.multitenantprojectmanagement.core.label.Label;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
-import com.projectmanagement.multitenantprojectmanagement.core.subtask.SubTask;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.Watcher;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;

@@ -21,6 +21,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.Issue
 import com.projectmanagement.multitenantprojectmanagement.core.label.mapper.LabelMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
+import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -37,6 +38,7 @@ public class IssueMapper {
         issue.setSprint(sprint);
         issue.setStatus(IssueStatus.TO_DO);
         issue.setPriority(IssuePriority.MEDIUM);
+        issue.setIsSubTask(false);
 
         if("TASK".equals(createIssueRequest.getType())) {
             issue.setType(IssueType.TASK);
@@ -64,6 +66,7 @@ public class IssueMapper {
         issue.setPriority(IssuePriority.MEDIUM);
         issue.setType(IssueType.EPIC);
         issue.setEpic(epic);
+        issue.setIsSubTask(false);
 
         return issue;
     }
@@ -126,7 +129,7 @@ public class IssueMapper {
                 .storyPoints(issue.getStoryPoints())
                 .labels(LabelMapper.toSetLabelResponse(issue.getLabels()))
                 .comments(issue.getComments())
-                .watchers(issue.getWatchers())
+                .watchers(WatcherMapper.toListWatcherResponses(issue.getWatchers()))
                 .worklogs(issue.getWorkLogs())
                 .epicId(issue.getEpic() != null ? issue.getEpic().getId() : null)
                 .assignee(issue.getAssignee() != null ? toListIssuesUserDto(issue.getAssignee()) : null)

@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.respons
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
+import com.projectmanagement.multitenantprojectmanagement.core.issue.event.IssueEvent;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.IssueRelationService;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
@@ -28,6 +30,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectSe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.SprintService;
+import com.projectmanagement.multitenantprojectmanagement.core.watcher.WatcherService;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -52,6 +55,7 @@ public class IssueService {
     private final UserService userService;
     private final EpicService epicService;
     private final IssueRelationService issueRelationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public Issue getIssueById(UUID id) {
         logger.info("Getting issue for the given ID: {}", maskingString.maskSensitive(id.toString()));
@@ -214,6 +218,8 @@ public class IssueService {
 
         logger.debug("Saved sub issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
+        eventPublisher.publishEvent(new IssueEvent(this, savedIssue.getId(), reporter.getId()));
+
         return IssueMapper.toListIssuesResponse(savedIssue);
     }
 
@@ -243,6 +249,8 @@ public class IssueService {
         Issue issue = IssueMapper.toIssueEntity(createIssueRequest, project, reporter, sprint, key);
         
         Issue savedIssue = issueRepository.save(issue);
+
+        eventPublisher.publishEvent(new IssueEvent(this, savedIssue.getId(), reporter.getId()));
 
         logger.debug("Saved Issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
