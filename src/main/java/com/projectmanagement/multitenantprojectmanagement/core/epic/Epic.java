@@ -49,7 +49,7 @@ public class Epic {
     private Projects project;
 
     @OneToMany(mappedBy = "epic", cascade = CascadeType.ALL)
-    private List<Issue> issues = new ArrayList<>();
+    private List<Issue> linkedIssues = new ArrayList<>();
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)

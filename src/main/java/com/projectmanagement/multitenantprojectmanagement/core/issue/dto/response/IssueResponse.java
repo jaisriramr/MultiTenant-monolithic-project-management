@@ -35,7 +35,7 @@ public class IssueResponse {
     private List<Comment> comments;
     private List<Watcher> watchers;
     private List<WorkLog> worklogs;
-    private List<SubTask> subTasks;
+    // private List<ListIssuesResponse> subTasks;
     private UUID epicId;
 
     private ListIssuesUserDto assignee;
