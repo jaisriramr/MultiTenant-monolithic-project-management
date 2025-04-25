@@ -10,7 +10,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.projectmanagement.multitenantprojectmanagement.core.commentattachment.CommentAttachment;
+import com.projectmanagement.multitenantprojectmanagement.core.attachment.Attachment;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -26,11 +26,12 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Data
 @RequiredArgsConstructor
-@Table(name = "Comments")
+@Table(name = "comments")
 @EntityListeners(AuditingEntityListener.class)
 public class Comment {
 
@@ -43,21 +44,31 @@ public class Comment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id", nullable = false)
+    @ToString.Exclude
     private Issue issue;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "author_id", nullable = false)
+    @ToString.Exclude
     private Users author;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
+    @ToString.Exclude
     private Comment parent;
 
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @ToString.Exclude
     private List<Comment> replies = new ArrayList<>();
 
     @OneToMany(mappedBy = "comment", cascade = CascadeType.ALL)
-    private List<CommentAttachment> attachments = new ArrayList<>();
+    @ToString.Exclude
+    private List<Attachment> attachments = new ArrayList<>();
+
+    private String path;
+
+    @Column(name = "depth", nullable = false)
+    private int depth;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)

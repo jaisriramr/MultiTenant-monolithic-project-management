@@ -1,9 +1,11 @@
 package com.projectmanagement.multitenantprojectmanagement.core.comment.dto.response;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesUserDto;
+import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 
 import lombok.Builder;
 import lombok.Data;
@@ -13,7 +15,9 @@ import lombok.Data;
 public class CommentResponse {
     private UUID id;
     private String content;
-    private ListIssuesUserDto author;
+    private UserListResponseDto author;
+    private int depth;
+    private String path;
     private Instant createdAt;
     private Instant updatedAt;
 }
