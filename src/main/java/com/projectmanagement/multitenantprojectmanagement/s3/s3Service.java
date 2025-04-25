@@ -26,7 +26,7 @@ public class s3Service {
     private final MaskingString maskingString;
 
     public String uploadFile(MultipartFile file, UUID id,String folder) throws IOException {
-        logger.info("Started uploading file to s3");
+        logger.info("Started uploading file to s3: {} {} {} ", file.getOriginalFilename(), id, folder);
         try {
             String originalFilename = Paths.get(file.getOriginalFilename()).getFileName().toString();
             String fileName = folder + "/" + id.toString() + "/" + originalFilename;
