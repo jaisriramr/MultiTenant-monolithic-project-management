@@ -9,6 +9,8 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.activity.enums.EntityType;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
 import jakarta.persistence.Column;
@@ -35,7 +37,7 @@ public class Activity {
     @UuidGenerator
     private UUID id;
 
-    private String action;// e.g., STATUS_UPDATED, COMMENT_ADDED
+    private String action; // e.g., STATUS_UPDATED, COMMENT_ADDED
 
     private String description; //"Sriram changed status from TODO to IN_PROGRESS"
 
@@ -44,6 +46,14 @@ public class Activity {
     private String oldValue;
 
     private String newValue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Projects project;
 
     @Enumerated(EnumType.STRING)
     private EntityType entityType; // "Issue", "Project", "Sprint", "Comment"
