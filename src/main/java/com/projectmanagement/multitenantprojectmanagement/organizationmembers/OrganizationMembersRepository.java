@@ -19,13 +19,13 @@ public interface OrganizationMembersRepository extends JpaRepository<Organizatio
     @Query("SELECT om.organization FROM OrganizationMembers om WHERE om.user.id = :userId")
     List<Organizations> findOrganizationsByUserId(UUID userId);
 
-    @NonNull
-    @Override
-    public Page<OrganizationMembers> findAll(@NonNull Pageable pageable);
+    public Page<OrganizationMembers> findAllByOrganization_Auth0Id(String auth0OrgId ,Pageable pageable);
 
-    Page<OrganizationMembers> findAllByUser_Auth0Id(String auth0Id, Pageable pageable);
+    Optional<OrganizationMembers> findByIdAndOrganization_Auth0Id(UUID id, String auth0OrgId);
 
-    Page<OrganizationMembers> findAllByOrganizationId(UUID organizationId, Pageable pageable);
+    Page<OrganizationMembers> findAllByUser_Auth0IdAndOrganization_Auth0Id(String auth0Id, String auth0OrgId,Pageable pageable);
+
+    Page<OrganizationMembers> findAllByOrganizationIdAndOrganization_Auth0Id(UUID organizationId, String auth0OrgId,Pageable pageable);
 
     Optional<OrganizationMembers> findByUser_Auth0IdAndOrganization_Auth0Id(String auth0UserId, String auth0OrganizationId);
 

@@ -23,6 +23,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dt
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.ListUsersOfAnOrganizationDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.OrganizationMembersResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserDetailsFromOrganizationMember;
+import com.projectmanagement.multitenantprojectmanagement.organizationmembers.mapper.OrganizationMembersMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;
 
 import lombok.RequiredArgsConstructor;
@@ -43,8 +44,8 @@ public class OrganizationMembersController {
 
     @GetMapping("/v1/organization-members/{id}")
     public ResponseEntity<OrganizationMembersResponseDto> getOrganizationMemberById(@PathVariable UUID id) {
-        OrganizationMembersResponseDto organizationMember = organizationMembersService.getOrganizationMemberById(id);
-        return ResponseEntity.ok(organizationMember);
+        OrganizationMembers organizationMember = organizationMembersService.getOrganizationMemberById(id);
+        return ResponseEntity.ok(OrganizationMembersMapper.toOrganizationMemberResponseDto(organizationMember));
     }
 
     @GetMapping("/v1/organization-members/user/{auth0UserId}")
@@ -61,8 +62,15 @@ public class OrganizationMembersController {
 
     @GetMapping("/v1/organization-members/me")
     public ResponseEntity<UserDetailsFromOrganizationMember> getOrganizationMemberByUserIdandOrgId(@AuthenticationPrincipal Jwt jwt) {
-        UserDetailsFromOrganizationMember organizationMember = organizationMembersService.getSpecificMember();
-        return ResponseEntity.ok(organizationMember);
+
+        String auth0UserId = jwtUtils.getCurrentUserId();
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        OrganizationMembers organizationMember = organizationMembersService.getOrganizationMemberbyAuth0UserIdAndAuth0OrgId(auth0UserId, auth0OrgId);
+
+
+
+        return ResponseEntity.ok(OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMember));
     }
 
     @GetMapping("/v1/organization-members/organization/{orgId}/role/{roleId}")
