@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.WatcherService;
@@ -15,6 +16,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.respo
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.mapper.WorklogMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -31,12 +34,16 @@ public class WorkLogService {
     private final UserService userService;
     private static final Logger logger = LoggerFactory.getLogger(WorkLogService.class);
     private final MaskingString maskingString;
+    private final OrganizationsService organizationsService;
+    private final JWTUtils jwtUtils;
 
 
     public WorkLog getWorklogById(UUID id) {
         logger.info("Getting worklog for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        WorkLog workLog = workLogRepository.findById(id).orElseThrow(() -> new NotFoundException("Worklog not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        WorkLog workLog = workLogRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Worklog not found for the given ID: " + id));
 
         logger.debug("Fetched worklog ID: {}", maskingString.maskSensitive(workLog.getId().toString()));
 
@@ -51,7 +58,11 @@ public class WorkLogService {
 
         Users user = userService.getUserEntity(createWorklogRequest.getUserId());
 
-        WorkLog workLog = WorklogMapper.toworklogEntity(createWorklogRequest, issue, user);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        WorkLog workLog = WorklogMapper.toworklogEntity(createWorklogRequest, issue, user, organization);
 
         WorkLog savedWorkLog = workLogRepository.save(workLog);
 

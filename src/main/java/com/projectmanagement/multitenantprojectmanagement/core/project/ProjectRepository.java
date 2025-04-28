@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProjectRepository extends JpaRepository<Projects, UUID> {
+    Optional<Projects> findByIdAndOrganization_Auth0Id(UUID id, String auth0Id);
+
     Optional<Projects> findByName(String name);
 
     Page<Projects> findAllByOrganizationId(UUID orgId, Pageable pageable);

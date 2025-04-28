@@ -12,10 +12,12 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProjectMemberRepository extends JpaRepository<ProjectMember, UUID> {
 
+    Optional<ProjectMember> findByIdAndOrganization_Auth0Id(UUID id, String auth0Id);
+
     Optional<ProjectMember> findByUser_Auth0Id(String auth0Id);
 
-    Optional<ProjectMember> findByUserId(UUID id);
+    Optional<ProjectMember> findByUserIdAndOrganization_Auth0Id(UUID id, String auth0Id);
 
-    Page<ProjectMember> findAllByProjectId(UUID projectId, Pageable pageable);
+    Page<ProjectMember> findAllByProjectIdAndOrganization_Auth0Id(UUID projectId, String auth0Id,Pageable pageable);
 
 }

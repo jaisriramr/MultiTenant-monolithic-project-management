@@ -24,6 +24,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.Watcher;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
 import jakarta.persistence.CascadeType;
@@ -70,6 +71,11 @@ public class Issue {
 
     @Enumerated(EnumType.STRING)
     private IssuePriority priority;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    @ToString.Exclude
+    private Organizations organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

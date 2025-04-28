@@ -15,13 +15,15 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.Issue
 @Repository
 public interface IssueRepository extends JpaRepository<Issue, UUID> {
 
-    Optional<Issue> findByKey(String key);
+    Optional<Issue> findByIdAndOrganization_Auth0Id(UUID id, String auth0Id);
 
-    Page<Issue> findAllBySprintIdAndIsSubTaskFalseAndTypeNot(UUID sprintId, IssueType type, Pageable pageable);
+    Optional<Issue> findByKeyAndOrganization_Auth0Id(String key, String auth0Id);
+
+    Page<Issue> findAllBySprintIdAndIsSubTaskFalseAndTypeNotAndOrganization_Auth0Id(UUID sprintId, IssueType type, String auth0Id,Pageable pageable);
 
     // Page<Issue> findAllBySprintIdAndParentIssueIsNullAndTypeNot(UUID sprintId, IssueType type, Pageable pageable);
 
-    Page<Issue> findAllByProjectIdAndSprintIsNullAndIsSubTaskFalseAndTypeNot(UUID projectId, IssueType type, Pageable pageable);
+    Page<Issue> findAllByProjectIdAndSprintIsNullAndIsSubTaskFalseAndTypeNotAndOrganization_Auth0Id(UUID projectId, IssueType type, String auth0Id,Pageable pageable);
 
     // Page<Issue> findAllByProjectIdAndSprintIsNullAndParentIssueIsNullAndTypeNot(UUID projectId, IssueType type, Pageable pageable);
 

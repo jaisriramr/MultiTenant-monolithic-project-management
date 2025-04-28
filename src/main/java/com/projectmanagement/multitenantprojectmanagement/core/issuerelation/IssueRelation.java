@@ -7,6 +7,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -34,6 +35,10 @@ public class IssueRelation {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_issue_id")
     private Issue parentIssue;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "child_issue_id")

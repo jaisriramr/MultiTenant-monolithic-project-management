@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
@@ -16,6 +17,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enu
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.mapper.IssueRelationMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 import jakarta.transaction.Transactional;
@@ -28,6 +31,8 @@ public class IssueRelationService {
     private final IssueRelationRepository issueRelationRepository;
     private final MaskingString maskingString;
     private static final Logger logger = LoggerFactory.getLogger(IssueRelationService.class);
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
     
     private IssueRelation getIssueRelationById(UUID id) {
         logger.info("Getting issue relation by ID: {}", maskingString.maskSensitive(id.toString()));
@@ -48,6 +53,12 @@ public class IssueRelationService {
         issueRelation.setChildIssue(child);
         
         issueRelation.setType(type);
+
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        issueRelation.setOrganization(organization);
 
         // if("SUB_TASK".equals(IssueRelationType.SUB_TASK.toString())) {
         //     issueRelation.setType(IssueRelationType.SUB_TASK);
@@ -72,7 +83,9 @@ public class IssueRelationService {
     public void deleteIssueRelationById(UUID id) {
         logger.info("Deleting issue relation");
 
-        IssueRelation issueRelation = issueRelationRepository.findByChildIssueId(id).orElseThrow(() -> new NotFoundException("Issue relation not found for the given Child ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        IssueRelation issueRelation = issueRelationRepository.findByChildIssueIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Issue relation not found for the given Child ID: " + id));
 
         issueRelationRepository.delete(issueRelation);
 
@@ -82,7 +95,9 @@ public class IssueRelationService {
     public PaginatedResponseDto<ListIssuesResponse> findChildWorksByParentId(UUID id, Pageable pageable) {
         logger.info("Getting all child works for the given parent ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Page<IssueRelation> issueRelations = issueRelationRepository.findAllByParentIssueIdAndTypeEquals(id, IssueRelationType.SUB_TASK, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<IssueRelation> issueRelations = issueRelationRepository.findAllByParentIssueIdAndTypeEqualsAndOrganization_Auth0Id(id, IssueRelationType.SUB_TASK, auth0OrgId,pageable);
 
         logger.debug("Fetched {} issue relations", issueRelations.getTotalElements());
 

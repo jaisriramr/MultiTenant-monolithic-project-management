@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,28 +29,28 @@ public class LabelController {
     private final LabelService labelService;
 
     @GetMapping("/v1/label/{id}")
-    public ResponseEntity<LabelResponse> getLabelById(@PathVariable UUID id) {
+    public ResponseEntity<LabelResponse> getLabelById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         LabelResponse labelResponse = labelService.getLabelById(id);
 
         return ResponseEntity.ok(labelResponse);
     }
 
     @GetMapping("/v1/label/{id}/project")
-    public ResponseEntity<PaginatedResponseDto<LabelResponse>> getLabelsByProjectId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<LabelResponse>> getLabelsByProjectId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<LabelResponse> response = labelService.getLabelsByProjectId(id, pageable);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/v1/label")
-    public ResponseEntity<LabelResponse> createLabel(@RequestBody CreateLabelRequest createLabelRequest) {
+    public ResponseEntity<LabelResponse> createLabel(@RequestBody CreateLabelRequest createLabelRequest,@AuthenticationPrincipal Jwt jwt) {
         Label label = labelService.createLabel(createLabelRequest);
 
         return ResponseEntity.ok(LabelMapper.toLabelResponse(label));
     }
 
     @DeleteMapping("/v1/label/{id}")
-    public ResponseEntity<LabelResponse> deleteLabelById(@PathVariable UUID id) {
+    public ResponseEntity<LabelResponse> deleteLabelById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         LabelResponse label = labelService.deleteLabelById(id);
 
         return ResponseEntity.ok(label);

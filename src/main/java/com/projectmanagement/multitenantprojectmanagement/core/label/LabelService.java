@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.request.CreateLabelRequest;
@@ -18,6 +19,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectSe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 import jakarta.transaction.Transactional;
@@ -32,11 +35,15 @@ public class LabelService {
     private final ProjectService projectService;
     private final IssueService issueService;
     private static final Logger logger = LoggerFactory.getLogger(IssueService.class);
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
 
     public Label getLabelEntity(UUID id) {
         logger.info("Getting label for the given ID: {}", maskingString.maskSensitive(id.toString()));
         
-        Label label = labelRepository.findById(id).orElseThrow(() -> new NotFoundException("Label not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Label label = labelRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Label not found for the given ID: " + id));
 
         logger.debug("Fetched label ID: {}", maskingString.maskSensitive(label.getId().toString()));
         return label;
@@ -51,7 +58,9 @@ public class LabelService {
     public PaginatedResponseDto<LabelResponse> getLabelsByProjectId(UUID id, Pageable pageable) {
         logger.info("Getting labels for the given project ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Page<Label> labels = labelRepository.findAllByProjectId(id, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Label> labels = labelRepository.findAllByProjectIdAndOrganization_Auth0Id(id, auth0OrgId,pageable);
 
         logger.debug("Fetched {} labels", labels.getTotalElements());
 
@@ -67,7 +76,11 @@ public class LabelService {
 
         Issue issue = issueService.getIssueById(createLabelRequest.getIssueId());
 
-        Label label = LabelMapper.toLabelEntity(createLabelRequest, project, issue);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        Label label = LabelMapper.toLabelEntity(createLabelRequest, project, issue, organization);
 
         Label savedLabel = labelRepository.save(label);
 

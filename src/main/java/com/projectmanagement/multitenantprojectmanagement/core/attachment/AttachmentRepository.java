@@ -1,6 +1,7 @@
 package com.projectmanagement.multitenantprojectmanagement.core.attachment;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -11,8 +12,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface AttachmentRepository extends JpaRepository<Attachment, UUID> {
 
-    Page<Attachment> findAllAttachmentsByIssueId(UUID issueId, Pageable pageable);
+    Optional<Attachment> findByIdAndOrganization_Auth0Id(UUID id,String auth0Id);
 
-    Page<Attachment> findAllAttachmentsByCommentId(UUID commentId, Pageable pageable);
+    Page<Attachment> findAllAttachmentsByIssueIdAndOrganization_Auth0Id(UUID issueId, String auth0Id,Pageable pageable);
+
+    Page<Attachment> findAllAttachmentsByCommentIdAndOrganization_Auth0Id(UUID commentId, String auth0Id,Pageable pageable);
 
 }

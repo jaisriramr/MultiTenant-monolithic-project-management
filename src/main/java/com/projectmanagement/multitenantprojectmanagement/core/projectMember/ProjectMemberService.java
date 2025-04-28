@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.request.CreateProjectMember;
@@ -18,6 +19,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.projectMember.map
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.RolesService;
@@ -35,6 +38,8 @@ public class ProjectMemberService {
     private final ProjectService projectService;
     private final UserService userService;
     private final RolesService rolesService;
+    private final OrganizationsService organizationsService;
+    private final JWTUtils jwtUtils;
 
     private final MaskingString maskingString;
     private static final Logger logger = LoggerFactory.getLogger(ProjectMemberService.class);
@@ -42,7 +47,9 @@ public class ProjectMemberService {
     public ProjectMember getProjectMemberEntity(UUID id) {
         logger.info("Getting project member for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        ProjectMember member = projectMemberRepository.findById(id).orElseThrow(() -> new NotFoundException("Project member not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        ProjectMember member = projectMemberRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Project member not found for the given ID: " + id));
 
         logger.debug("Fetched project member ID: {}", maskingString.maskSensitive(member.getId().toString()));
 
@@ -52,7 +59,9 @@ public class ProjectMemberService {
     public ProjectMemberDetailedResponse getMemberByUserId(UUID id) {
         logger.info("Getting project member for the given user ID: {}", maskingString.maskSensitive(id.toString()));
 
-        ProjectMember member = projectMemberRepository.findByUserId(id).orElseThrow(() -> new NotFoundException("Project member not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        ProjectMember member = projectMemberRepository.findByUserIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Project member not found for the given ID: " + id));
 
         logger.debug("Fetched project member ID: {}", maskingString.maskSensitive(member.getId().toString()));
 
@@ -62,7 +71,9 @@ public class ProjectMemberService {
     public PaginatedResponseDto<ProjectMembersResponse> getAllMembersByProjectId(UUID projectId, Pageable pageable) {
         logger.info("Getting all members in a project via its ID: {}", maskingString.maskSensitive(projectId.toString()));
 
-        Page<ProjectMember> members = projectMemberRepository.findAllByProjectId(projectId, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<ProjectMember> members = projectMemberRepository.findAllByProjectIdAndOrganization_Auth0Id(projectId, auth0OrgId,pageable);
 
         logger.debug("Fetched {} members", members.getTotalElements());
 
@@ -80,7 +91,11 @@ public class ProjectMemberService {
 
         Roles role = rolesService.findRoleEntityById(createProjectMember.getRoleId());
 
-        ProjectMember projectMember = ProjectMemberMapper.toProjectMemberEntity(user, project, role);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        ProjectMember projectMember = ProjectMemberMapper.toProjectMemberEntity(user, project, role, organization);
 
         ProjectMember savedMember = projectMemberRepository.save(projectMember);
 

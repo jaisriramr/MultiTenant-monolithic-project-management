@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,7 +33,7 @@ public class AttachmentController {
     private final AttachmentService attachmentService;
 
     @GetMapping("/v1/attachment/{id}")
-    public ResponseEntity<AttachmentResponse> findAttachmentById(@PathVariable UUID id) {
+    public ResponseEntity<AttachmentResponse> findAttachmentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         Attachment attachment = attachmentService.getAttachmentById(id);
 
         AttachmentResponse attachmentResponse = AttachmentMapper.toAttachmentResponse(attachment);
@@ -40,35 +42,35 @@ public class AttachmentController {
     }
 
     @GetMapping("/v1/attachment/{id}/issue")
-    public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByIssueId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByIssueId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<AttachmentResponse> response = attachmentService.getAttachmentsByIssueId(id, pageable);
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/v1/attachment/{id}/comment")
-    public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByCommentId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByCommentId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<AttachmentResponse> response = attachmentService.getAttachmentByCommentId(id, pageable);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/v1/attachment/issue")
-    public ResponseEntity<AttachmentResponse> createAttachmentIssue(@Valid @RequestPart("file") MultipartFile file, @RequestParam("issueId") UUID issueId, @RequestParam("userId") UUID userId) {
-        AttachmentResponse response = attachmentService.createAttachment(file, issueId, userId, null);
+    public ResponseEntity<AttachmentResponse> createAttachmentIssue(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("issueId") UUID issueId, @RequestParam("userId") UUID userId,@AuthenticationPrincipal Jwt jwt) {
+        AttachmentResponse response = attachmentService.createAttachment(file,projectId, issueId, userId, null);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/v1/attachment/comment")
-    public ResponseEntity<AttachmentResponse> createAttachmentComment(@Valid @RequestPart("file") MultipartFile file, @RequestParam("commentId") UUID commentId, @RequestParam("userId") UUID userId) {
-        AttachmentResponse response = attachmentService.createAttachment(file, null, userId, commentId);
+    public ResponseEntity<AttachmentResponse> createAttachmentComment(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("commentId") UUID commentId, @RequestParam("userId") UUID userId,@AuthenticationPrincipal Jwt jwt) {
+        AttachmentResponse response = attachmentService.createAttachment(file, projectId,null, userId, commentId);
 
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/v1/attachment/{id}")
-    public ResponseEntity<AttachmentResponse> deleteAttachmentById(@PathVariable UUID id) {
+    public ResponseEntity<AttachmentResponse> deleteAttachmentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         AttachmentResponse attachmentResponse = attachmentService.deleteAttachment(id);
 
         return ResponseEntity.ok(attachmentResponse);

@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,35 +31,35 @@ public class ProjectMemberController {
     private final ProjectMemberService projectMemberService;
 
     @GetMapping("/v1/project-member/{id}/user")
-    public ResponseEntity<ProjectMemberDetailedResponse> getMemberById(@PathVariable UUID id) {
+    public ResponseEntity<ProjectMemberDetailedResponse> getMemberById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         ProjectMemberDetailedResponse member = projectMemberService.getMemberByUserId(id);
 
         return ResponseEntity.ok(member);
     }
 
     @GetMapping("/v1/project-member/{id}/project")
-    public ResponseEntity<PaginatedResponseDto<ProjectMembersResponse>> getMembersByProjectId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<ProjectMembersResponse>> getMembersByProjectId(@PathVariable UUID id, Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<ProjectMembersResponse> members = projectMemberService.getAllMembersByProjectId(id, pageable);
 
         return ResponseEntity.ok(members);
     }
 
     @PostMapping("/v1/project-member")
-    public ResponseEntity<ProjectMemberDetailedResponse> createProjectMember(@RequestBody CreateProjectMember createProjectMember) {
+    public ResponseEntity<ProjectMemberDetailedResponse> createProjectMember(@RequestBody CreateProjectMember createProjectMember, @AuthenticationPrincipal Jwt jwt) {
         ProjectMemberDetailedResponse member = projectMemberService.createProjectMember(createProjectMember);
 
         return ResponseEntity.ok(member);
     }
 
     @PutMapping("/v1/project-member/{id}/role/{roleId}")
-    public ResponseEntity<ProjectMemberDetailedResponse> updateProjectMember(@PathVariable UUID id, @PathVariable UUID roleId ) {
+    public ResponseEntity<ProjectMemberDetailedResponse> updateProjectMember(@PathVariable UUID id, @PathVariable UUID roleId, @AuthenticationPrincipal Jwt jwt) {
         ProjectMemberDetailedResponse member = projectMemberService.updateProjectMemberRole(id, roleId);
 
         return ResponseEntity.ok(member);
     }
 
     @DeleteMapping("/v1/project-member/{id}")
-    public ResponseEntity<ProjectMemberDetailedResponse> removeProjectMember(@PathVariable UUID id) {
+    public ResponseEntity<ProjectMemberDetailedResponse> removeProjectMember(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         ProjectMemberDetailedResponse member = projectMemberService.removeMemberFromProject(id);
 
         return ResponseEntity.ok(member);

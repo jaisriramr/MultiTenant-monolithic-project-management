@@ -13,6 +13,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.reque
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.response.CommentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
@@ -55,7 +57,7 @@ public class CommentMapper {
                 .build();
     }
 
-    public static Comment toCommentEntity(CreateCommentRequest createCommentRequest, Users author, Issue issue) {
+    public static Comment toCommentEntity(CreateCommentRequest createCommentRequest, Users author, Issue issue, Organizations organization, Projects project) {
 
         Comment comment = new Comment();
 
@@ -63,6 +65,8 @@ public class CommentMapper {
         comment.setContent(createCommentRequest.getComment());
         comment.setIssue(issue);
         comment.setAuthor(author);
+        comment.setOrganization(organization);
+        comment.setProject(project);
         comment.setDepth(0);
         
         comment.setParent(null);
@@ -71,7 +75,7 @@ public class CommentMapper {
         return comment;
     }
 
-    public static Comment toCommentReply(CreateCommentReplyRequest createCommentReplyRequest, Users author, Comment parent) {
+    public static Comment toCommentReply(CreateCommentReplyRequest createCommentReplyRequest, Users author, Comment parent, Organizations organization, Projects project) {
         Comment comment = new Comment();
         
         comment.setContent(createCommentReplyRequest.getComment());
@@ -79,6 +83,8 @@ public class CommentMapper {
         comment.setParent(parent);
         comment.setIssue(parent.getIssue());
         comment.setAuthor(author);
+        comment.setOrganization(organization);
+        comment.setProject(project);
 
         return comment;
     }

@@ -9,6 +9,7 @@ import lombok.Data;
 @Data
 public class CreateAttachmentRequest {
     private UUID issueId;
+    private UUID projectId;
     private UUID userId;
     private UUID commentId;
     private MultipartFile file;

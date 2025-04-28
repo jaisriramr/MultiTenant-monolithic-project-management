@@ -4,16 +4,18 @@ import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.response.EpicResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
 public class EpicMapper {
 
-    public static Epic toEpicEntity(CreateEpicRequest createEpicRequest, Projects project) {
+    public static Epic toEpicEntity(CreateEpicRequest createEpicRequest, Projects project, Organizations organization) {
 
         Epic epic = new Epic();
         epic.setName(createEpicRequest.getName());
         epic.setDescription(createEpicRequest.getDescription());
         epic.setColor(createEpicRequest.getColor());
         epic.setProject(project);
+        epic.setOrganization(organization);
 
         return epic;
 

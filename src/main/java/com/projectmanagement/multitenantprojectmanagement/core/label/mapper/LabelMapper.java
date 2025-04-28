@@ -12,15 +12,17 @@ import com.projectmanagement.multitenantprojectmanagement.core.label.Label;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.request.CreateLabelRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.response.LabelResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 public class LabelMapper {
 
-    public static Label toLabelEntity(CreateLabelRequest createLabelRequest, Projects project, Issue issue) {
+    public static Label toLabelEntity(CreateLabelRequest createLabelRequest, Projects project, Issue issue, Organizations organization) {
 
         Label label = new Label();
         label.setName(createLabelRequest.getName());
-        label.setProject(project);    
+        label.setProject(project);  
+        label.setOrganization(organization);  
         
         if(label.getIssues() == null) {
             label.setIssues(new ArrayList<>());
