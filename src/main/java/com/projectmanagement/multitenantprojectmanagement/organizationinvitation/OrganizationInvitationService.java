@@ -14,6 +14,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.dto.request.InviteUserToAnOrganization;
@@ -35,6 +36,7 @@ public class OrganizationInvitationService {
     private final RolesService rolesService;
     private static final Logger logger = LoggerFactory.getLogger(OrganizationInvitationService.class);
     private final MaskingString maskingString;
+    private final JWTUtils jwtUtils;
 
     public PaginatedResponseDto<OrganizationInvitation> getAllInvitations(Pageable pageable) {
         logger.info("Getting all invitations", pageable);
@@ -68,7 +70,9 @@ public class OrganizationInvitationService {
     public PaginatedResponseDto<OrganizationInvitation> getAllInvitationsByEmail(String email, Pageable pageable) {
         logger.info("Getting all invitations for the given email: {} ", maskingString.maskSensitive(email));
 
-        Page<OrganizationInvitation> invitations = organiationInvitationRepository.findAllByEmail(email, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<OrganizationInvitation> invitations = organiationInvitationRepository.findAllByEmailAndOrganizationAuth0Id(email, auth0OrgId,pageable);
 
         logger.debug("Fetched {} invitations for the email: {} ", invitations.getTotalElements(), maskingString.maskSensitive(email));
 
@@ -79,7 +83,9 @@ public class OrganizationInvitationService {
 
         logger.info("Getting all invitations for the given status: {} ", status);
 
-        Page<OrganizationInvitation> invitations = organiationInvitationRepository.findAllByStatus(status, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<OrganizationInvitation> invitations = organiationInvitationRepository.findAllByStatusAndOrganizationAuth0Id(status, auth0OrgId,pageable);
 
         logger.debug("Fetched {} invitations for the status: {} ", invitations.getTotalElements(), status);
 
@@ -90,7 +96,10 @@ public class OrganizationInvitationService {
     public String revokeInvitationToAnUser(String orgId, String invitationId) {
         logger.info("Revoking invitation for the given ID: {} ", maskingString.maskSensitive(invitationId));
         try {
-            OrganizationInvitation organizationInvitation = organiationInvitationRepository.findByAuth0Id(invitationId).orElseThrow(() -> new NotFoundException("Invitation not found for the given ID: " + invitationId));
+
+            String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+            OrganizationInvitation organizationInvitation = organiationInvitationRepository.findByAuth0IdAndOrganizationAuth0Id(invitationId, auth0OrgId).orElseThrow(() -> new NotFoundException("Invitation not found for the given ID: " + invitationId));
 
             logger.debug("Fetched invitation ID: {} ", maskingString.maskSensitive(organizationInvitation.getId().toString()));
 
@@ -116,7 +125,9 @@ public class OrganizationInvitationService {
         logger.info("Updating invitation status for the given ID: {} ", maskingString.maskSensitive(invitationId));
         try {
 
-            OrganizationInvitation organizationInvitation = organiationInvitationRepository.findByAuth0Id(invitationId).orElseThrow(() -> new NotFoundException("Invitation not found for the given ID: " + invitationId));
+            String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+            OrganizationInvitation organizationInvitation = organiationInvitationRepository.findByAuth0IdAndOrganizationAuth0Id(invitationId, auth0OrgId).orElseThrow(() -> new NotFoundException("Invitation not found for the given ID: " + invitationId));
 
             logger.debug("Fetched invitation ID: {} ", maskingString.maskSensitive(organizationInvitation.getId().toString()));
 
