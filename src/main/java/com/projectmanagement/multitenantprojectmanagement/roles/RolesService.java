@@ -82,7 +82,9 @@ public class RolesService {
             throw new IllegalArgumentException("roleIds list cannot be null or empty");
         }
 
-        List<Roles> roles = rolesRepository.findAllByAuth0IdIn(roleIds);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        List<Roles> roles = rolesRepository.findAllByAuth0IdInAndOrganization_Auth0Id(roleIds, auth0OrgId);
 
         logger.debug("Fetched {} Roles", roles.size());
 

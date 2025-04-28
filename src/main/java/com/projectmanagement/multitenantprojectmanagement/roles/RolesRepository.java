@@ -22,7 +22,7 @@ public interface RolesRepository extends JpaRepository<Roles, UUID> {
 
     Optional<Roles> findByAuth0IdAndOrganization_Auth0Id(String auth0Id, String auth0OrgId);
 
-    List<Roles> findAllByAuth0IdIn(List<String> auth0Ids);
+    List<Roles> findAllByAuth0IdInAndOrganization_Auth0Id(List<String> auth0Ids, String auth0OrgId);
 
     List<Roles> findAllByOrganization_Auth0Id(String orgId);
     
