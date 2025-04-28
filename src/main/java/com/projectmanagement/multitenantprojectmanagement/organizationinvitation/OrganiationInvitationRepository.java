@@ -15,9 +15,9 @@ public interface OrganiationInvitationRepository extends JpaRepository<Organizat
 
     Page<OrganizationInvitation> findAllByOrganizationAuth0Id(String orgId, Pageable pageable);
 
-    Page<OrganizationInvitation> findAllByEmail(String email, Pageable pageable);
+    Page<OrganizationInvitation> findAllByEmailAndOrganizationAuth0Id(String email, String orgId,Pageable pageable);
 
-    Page<OrganizationInvitation> findAllByStatus(StatusForInvitation status, Pageable pageable);
+    Page<OrganizationInvitation> findAllByStatusAndOrganizationAuth0Id(StatusForInvitation status, String orgId,Pageable pageable);
 
-    Optional<OrganizationInvitation> findByAuth0Id(String invitationId);
+    Optional<OrganizationInvitation> findByAuth0IdAndOrganizationAuth0Id(String invitationId, String orgId);
 }
