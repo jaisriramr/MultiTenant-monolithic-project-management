@@ -40,7 +40,9 @@ public class ProjectService {
     public Projects getProjectById(UUID id) {
         logger.info("Getting project for the given ID: {}", maskingString.maskSensitive(id.toString()));
         
-        Projects project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException("Project not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Projects project = projectRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Project not found for the given ID: " + id));
         
         logger.debug("Fetched project ID: {}", maskingString.maskSensitive(project.getId().toString()));
 
@@ -98,7 +100,7 @@ public class ProjectService {
     public ProjectDetailsResponse updateProject(@Valid UpdateProjectRequest updateProjectRequest) {
         logger.info("Updating project for the given ID: {}", maskingString.maskSensitive(updateProjectRequest.getId().toString()));
 
-        Projects project = projectRepository.findById(updateProjectRequest.getId()).orElseThrow(() -> new NotFoundException("Project not found the given ID: " + updateProjectRequest.getId()));
+        Projects project = getProjectById(updateProjectRequest.getId());
 
         logger.debug("Fetched project ID: {}", maskingString.maskSensitive(project.getId().toString()));
 
@@ -121,7 +123,7 @@ public class ProjectService {
     public ProjectDetailsResponse deleteProjectById(UUID id) {
         logger.info("Deleting project for the given ID: {}",maskingString.maskSensitive(id.toString()));
 
-        Projects project = projectRepository.findById(id).orElseThrow(() -> new NotFoundException("Project not found for the given ID: " + id));
+        Projects project = getProjectById(id);
 
         logger.debug("Fetched project ID: {}", maskingString.maskSensitive(project.getId().toString()));
 

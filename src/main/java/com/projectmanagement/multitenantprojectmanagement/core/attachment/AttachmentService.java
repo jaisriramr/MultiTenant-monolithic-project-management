@@ -11,14 +11,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.dto.response.AttachmentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.mapper.AttachmentMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.s3.s3Service;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
@@ -36,12 +41,17 @@ public class AttachmentService {
     private static final Logger logger = LoggerFactory.getLogger(AttachmentService.class);
     private final IssueService issueService;
     private final UserService userService;
+    private final ProjectService projectService;
+    private final OrganizationsService organizationsService;
     private final s3Service s3Service;
+    private final JWTUtils jwtUtils;
 
     public Attachment getAttachmentById(UUID id) {
         logger.info("Getting attachment by ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Attachment attachment = attachmentRepository.findById(id).orElseThrow(() -> new NotFoundException("Attachment is not found for the given ID: {}" + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Attachment attachment = attachmentRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Attachment is not found for the given ID: {}" + id));
 
         logger.debug("Fetched attachment ID: {}", maskingString.maskSensitive(attachment.getId().toString()));
 
@@ -51,7 +61,9 @@ public class AttachmentService {
     public PaginatedResponseDto<AttachmentResponse> getAttachmentsByIssueId(UUID issueId, Pageable pageable) {
         logger.info("Getting attachments by issue ID: {}", maskingString.maskSensitive(issueId.toString()));
 
-        Page<Attachment> attachments = attachmentRepository.findAllAttachmentsByIssueId(issueId, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Attachment> attachments = attachmentRepository.findAllAttachmentsByIssueIdAndOrganization_Auth0Id(issueId, auth0OrgId, pageable);
 
         logger.debug("Fetched {} attachments", attachments.getTotalElements());
 
@@ -61,7 +73,9 @@ public class AttachmentService {
     public PaginatedResponseDto<AttachmentResponse> getAttachmentByCommentId(UUID commentId, Pageable pageable) {
         logger.info("Getting attachments by comment ID: {}", maskingString.maskSensitive(commentId.toString()));
 
-        Page<Attachment> attachments = attachmentRepository.findAllAttachmentsByCommentId(commentId, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Attachment> attachments = attachmentRepository.findAllAttachmentsByCommentIdAndOrganization_Auth0Id(commentId, auth0OrgId,pageable);
 
         logger.debug("Fetched {} attachments", attachments.getTotalElements());
 
@@ -69,7 +83,7 @@ public class AttachmentService {
     }
 
     @Transactional
-    public AttachmentResponse createAttachment(MultipartFile file, UUID issueId, UUID userId, UUID commentId) {
+    public AttachmentResponse createAttachment(MultipartFile file,UUID projectId, UUID issueId, UUID userId, UUID commentId) {
         logger.info("Creating attachment file: {}, userId: {}, issueId: {}, commentId: {}", file, userId, issueId, commentId);
         try {
             Attachment attachment = new Attachment();
@@ -79,7 +93,16 @@ public class AttachmentService {
             logger.debug("File uploaded To S3");
 
             Users user = userService.getUserEntity(userId);
+
+            String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+            Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+            Projects project = projectService.getProjectById(projectId);
             
+            attachment.setProject(project);
+            attachment.setOrganization(organization);
+
             attachment.setName(file.getOriginalFilename());
             attachment.setType(file.getContentType());
             attachment.setUrl(s3Url);

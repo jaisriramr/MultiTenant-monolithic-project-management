@@ -10,6 +10,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.projectMember.Pro
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMemberDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMemberProjectDto;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMembersResponse;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
@@ -43,12 +44,13 @@ public class ProjectMemberMapper {
                 .build();
     }
 
-    public static ProjectMember toProjectMemberEntity(Users user, Projects project, Roles role) {
+    public static ProjectMember toProjectMemberEntity(Users user, Projects project, Roles role, Organizations organization) {
         ProjectMember projectMember = new ProjectMember();
 
         projectMember.setProject(project);
         projectMember.setUser(user);
         projectMember.setRole(role);
+        projectMember.setOrganization(organization);
 
         if(project.getProjectMembers() == null) {
             project.setProjectMembers(new ArrayList<>());

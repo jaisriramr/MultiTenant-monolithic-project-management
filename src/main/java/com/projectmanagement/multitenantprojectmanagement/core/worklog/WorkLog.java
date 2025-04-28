@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
 import jakarta.persistence.Column;
@@ -40,6 +41,10 @@ public class WorkLog {
     private String comment;
 
     private LocalDateTime startedDateTime;
+
+    @ManyToOne
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
 
     @OneToOne
     @JoinColumn(name = "issue_id", unique = true, nullable = false)

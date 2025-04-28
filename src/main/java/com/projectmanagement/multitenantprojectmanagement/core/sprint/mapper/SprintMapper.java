@@ -5,6 +5,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
@@ -16,10 +18,12 @@ import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.respon
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.MinimalSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.SprintDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.enums.SprintStatus;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 public class SprintMapper {
 
-    public static Sprint toSprintEntity(CreateSprintRequest createSprintRequest, Projects project) {
+    public static Sprint toSprintEntity(CreateSprintRequest createSprintRequest, Projects project, Organizations organization) {
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -35,6 +39,7 @@ public class SprintMapper {
         sprint.setProject(project);
         sprint.setStatus(SprintStatus.ACTIVE);
         sprint.setIssues(new ArrayList<>());
+        sprint.setOrganization(organization);
 
         return sprint;
     }
@@ -77,6 +82,18 @@ public class SprintMapper {
         }
 
         return listSprints;
+    }
+
+    public static PaginatedResponseDto<ListSprintResponse> toPaginatedResponseDto(Page<Sprint> sprints) {
+
+        return PaginatedResponseDto.<ListSprintResponse>builder()
+                .data(toListSprintResponse(sprints.getContent()))
+                .page(sprints.getNumber())
+                .totalPages(sprints.getTotalPages())
+                .totalElements(sprints.getTotalElements())
+                .size(sprints.getSize())
+                .build();
+
     }
 
     public static SprintDetailedResponse toSprintDetailedResponse(Sprint sprint) {

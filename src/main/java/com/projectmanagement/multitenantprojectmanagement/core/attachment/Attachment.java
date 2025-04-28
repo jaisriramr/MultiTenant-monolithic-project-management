@@ -10,6 +10,8 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
 import jakarta.persistence.Column;
@@ -39,6 +41,14 @@ public class Attachment {
     private String type;
 
     private String url;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "project_id")
+    private Projects project;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "issue_id")

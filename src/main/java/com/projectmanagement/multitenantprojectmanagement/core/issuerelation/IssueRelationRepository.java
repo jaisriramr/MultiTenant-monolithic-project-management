@@ -12,8 +12,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enu
 
 @Repository
 public interface IssueRelationRepository extends JpaRepository<IssueRelation, UUID> {
-    Optional<IssueRelation> findByChildIssueId(UUID childId);
+    Optional<IssueRelation> findByChildIssueIdAndOrganization_Auth0Id(UUID childId, String auth0Id);
 
-    Page<IssueRelation> findAllByParentIssueIdAndTypeEquals(UUID parentId, IssueRelationType type, Pageable pageable);
+    Page<IssueRelation> findAllByParentIssueIdAndTypeEqualsAndOrganization_Auth0Id(UUID parentId, IssueRelationType type, String auth0Id,Pageable pageable);
 
 }

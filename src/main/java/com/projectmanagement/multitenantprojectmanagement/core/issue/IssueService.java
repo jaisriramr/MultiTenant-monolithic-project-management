@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
@@ -35,6 +36,8 @@ import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.S
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
@@ -56,11 +59,15 @@ public class IssueService {
     private final EpicService epicService;
     private final IssueRelationService issueRelationService;
     private final ApplicationEventPublisher eventPublisher;
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
 
     public Issue getIssueById(UUID id) {
         logger.info("Getting issue for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Issue issue = issueRepository.findById(id).orElseThrow(() -> new NotFoundException("Issue not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Issue issue = issueRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Issue not found for the given ID: " + id));
 
         logger.debug("Fetched issue Id: {}", maskingString.maskSensitive(issue.getId().toString()));
 
@@ -70,7 +77,9 @@ public class IssueService {
     public IssueResponse getIssueByKey(String key) {
         logger.info("Getting issue for the given key: {}", key);
         
-        Issue issue = issueRepository.findByKey(key).orElseThrow(() -> new NotFoundException("Issue not found for the given Key: " + key));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Issue issue = issueRepository.findByKeyAndOrganization_Auth0Id(key, auth0OrgId).orElseThrow(() -> new NotFoundException("Issue not found for the given Key: " + key));
 
         logger.debug("Fetched issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
 
@@ -80,7 +89,9 @@ public class IssueService {
     public PaginatedResponseDto<ListIssuesResponse> getIssuesesBySprintId(UUID sprintId, Pageable pageable) {
         logger.info("Getting all issues associated with sprint ID: {}", maskingString.maskSensitive(sprintId.toString()));
 
-        Page<Issue> issues = issueRepository.findAllBySprintIdAndIsSubTaskFalseAndTypeNot(sprintId, IssueType.EPIC, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Issue> issues = issueRepository.findAllBySprintIdAndIsSubTaskFalseAndTypeNotAndOrganization_Auth0Id(sprintId, IssueType.EPIC, auth0OrgId,pageable);
 
         logger.debug("Fetched {} issues", issues.getTotalElements());
 
@@ -91,7 +102,9 @@ public class IssueService {
     public PaginatedResponseDto<ListIssuesResponse> getBacklogIssues(UUID projectId, Pageable pagable) {
         logger.info("Getting backlog issues for project ID: {}", maskingString.maskSensitive(projectId.toString()));
 
-        Page<Issue> issues = issueRepository.findAllByProjectIdAndSprintIsNullAndIsSubTaskFalseAndTypeNot(projectId,IssueType.EPIC, pagable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Issue> issues = issueRepository.findAllByProjectIdAndSprintIsNullAndIsSubTaskFalseAndTypeNotAndOrganization_Auth0Id(projectId,IssueType.EPIC, auth0OrgId,pagable);
 
         logger.debug("Fetched {} issues", issues.getTotalElements());
 
@@ -200,11 +213,15 @@ public class IssueService {
             sprint = sprintService.getSprintEntity(createEpicIssueRequest.getSprintId());
         }
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
         CreateEpicRequest epicRequest = IssueMapper.toCreateEpicIssueRequest(createEpicIssueRequest);
 
         Epic epic = epicService.createEpicEntity(epicRequest);
 
-        Issue issue = IssueMapper.toEpicIssueEntity(createEpicIssueRequest, project, sprint, reporter, key, epic);
+        Issue issue = IssueMapper.toEpicIssueEntity(createEpicIssueRequest, project, sprint, reporter, key, epic, organization);
 
         Issue savedIssue = issueRepository.save(issue);
 
@@ -238,7 +255,11 @@ public class IssueService {
             sprint = sprintService.getSprintEntity(createSubIssueRequest.getSprintId());
         }
 
-        Issue issue = IssueMapper.toSubIssueEntity(createSubIssueRequest, project, sprint,reporter, key, Parent);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        Issue issue = IssueMapper.toSubIssueEntity(createSubIssueRequest, project, sprint,reporter, key, Parent, organization);
         
         Issue savedIssue = issueRepository.save(issue);
 
@@ -274,7 +295,11 @@ public class IssueService {
             sprint = sprintService.getSprintEntity(createIssueRequest.getSprintId());
         }
 
-        Issue issue = IssueMapper.toIssueEntity(createIssueRequest, project, reporter, sprint, key);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        Issue issue = IssueMapper.toIssueEntity(createIssueRequest, project, reporter, sprint, key, organization);
         
         Issue savedIssue = issueRepository.save(issue);
 

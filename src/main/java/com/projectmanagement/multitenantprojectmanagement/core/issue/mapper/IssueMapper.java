@@ -24,12 +24,13 @@ import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.mapper.WorklogMapper;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
 public class IssueMapper {
 
-    public static Issue toIssueEntity(CreateIssueRequest createIssueRequest, Projects project, Users reporter, Sprint sprint, String key) {
+    public static Issue toIssueEntity(CreateIssueRequest createIssueRequest, Projects project, Users reporter, Sprint sprint, String key, Organizations organization) {
         Issue issue = new Issue();
         issue.setTitle(createIssueRequest.getTitle());
         
@@ -41,6 +42,7 @@ public class IssueMapper {
         issue.setStatus(IssueStatus.TO_DO);
         issue.setPriority(IssuePriority.MEDIUM);
         issue.setIsSubTask(false);
+        issue.setOrganization(organization);
 
         if("TASK".equals(createIssueRequest.getType())) {
             issue.setType(IssueType.TASK);
@@ -57,7 +59,7 @@ public class IssueMapper {
         return issue;
     }
 
-    public static Issue toEpicIssueEntity(CreateEpicIssueRequest createEpicIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Epic epic) {
+    public static Issue toEpicIssueEntity(CreateEpicIssueRequest createEpicIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Epic epic, Organizations organization) {
         Issue issue = new Issue();
         issue.setTitle(createEpicIssueRequest.getTitle());
         issue.setKey(key);
@@ -69,11 +71,12 @@ public class IssueMapper {
         issue.setType(IssueType.EPIC);
         issue.setEpic(epic);
         issue.setIsSubTask(false);
+        issue.setOrganization(organization);
 
         return issue;
     }
 
-    public static Issue toSubIssueEntity(CreateSubIssueRequest createSubIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Issue parent) {
+    public static Issue toSubIssueEntity(CreateSubIssueRequest createSubIssueRequest, Projects project, Sprint sprint, Users reporter, String key, Issue parent, Organizations organization) {
         Issue issue = new Issue();
         issue.setTitle(createSubIssueRequest.getTitle());
         
@@ -84,6 +87,7 @@ public class IssueMapper {
         issue.setStatus(IssueStatus.TO_DO);
         issue.setPriority(IssuePriority.MEDIUM);
         issue.setIsSubTask(true);
+        issue.setOrganization(organization);
 
         if("TASK".equals(createSubIssueRequest.getType())) {
             issue.setType(IssueType.TASK);

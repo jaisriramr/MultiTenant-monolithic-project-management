@@ -12,6 +12,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -43,6 +44,10 @@ public class Epic {
     private String description;
 
     private String color;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

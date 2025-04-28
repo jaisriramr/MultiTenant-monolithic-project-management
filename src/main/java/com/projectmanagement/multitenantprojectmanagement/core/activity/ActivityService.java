@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.activity.mapper.ActivityMapper;
@@ -34,11 +35,14 @@ public class ActivityService {
     private final OrganizationsService organizationsService;
     private final MaskingString maskingString;
     private static final Logger logger = LoggerFactory.getLogger(ActivityService.class);
+    private final JWTUtils jwtUtils;
 
     public Activity getActivityById(UUID id) {
         logger.info("Getting activity for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Activity activity = activityRepository.findById(id).orElseThrow(() -> new NotFoundException("Activity not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Activity activity = activityRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Activity not found for the given ID: " + id));
 
         logger.debug("Fetched activity ID: {}", maskingString.maskSensitive(activity.getId().toString()));
 
@@ -48,7 +52,9 @@ public class ActivityService {
     public PaginatedResponseDto<ActivityResponse> getActivitiesByEntityId(UUID entityId, Pageable pageable) {
         logger.info("Getting activites for the given ID: {}", maskingString.maskSensitive(entityId.toString()));
 
-        Page<Activity> activites = activityRepository.findAllByEntityId(entityId, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Activity> activites = activityRepository.findAllByEntityIdAndOrganization_Auth0Id(entityId, auth0OrgId,pageable);
 
         logger.debug("Fetched {} activites", activites.getTotalElements());
 
@@ -74,7 +80,9 @@ public class ActivityService {
 
         Projects project = projectService.getProjectById(createActivityRequest.getProjectId());
 
-        Organizations organization = organizationsService.getOrganizationByAuth0Id(createActivityRequest.getOrganizationId());
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
 
         Activity activity = ActivityMapper.toActivityEntity(createActivityRequest, performedBy, project, organization);
 

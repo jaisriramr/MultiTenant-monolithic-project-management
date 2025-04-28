@@ -37,13 +37,13 @@ public class Projectcontroller {
     private final ProjectService projectService;
 
     @GetMapping("/v1/project/{id}")
-    public ResponseEntity<ProjectDetailsResponse> getProjectById(@PathVariable UUID id) {
+    public ResponseEntity<ProjectDetailsResponse> getProjectById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.getProjectByIdController(id);
         return ResponseEntity.ok(project);
     }
 
     @GetMapping("/v1/project/{id}/organization")
-    public ResponseEntity<PaginatedResponseDto<ProjectsResponse>> getAllProjectsByOrgId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<ProjectsResponse>> getAllProjectsByOrgId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<ProjectsResponse> projects = projectService.getAllProjectsByOrganizationId(id, pageable);
 
         return ResponseEntity.ok(projects);
@@ -56,14 +56,14 @@ public class Projectcontroller {
     }
 
     @PutMapping("/v1/project")
-    public ResponseEntity<ProjectDetailsResponse> updateProject(@RequestBody UpdateProjectRequest updateProjectRequest) {
+    public ResponseEntity<ProjectDetailsResponse> updateProject(@RequestBody UpdateProjectRequest updateProjectRequest,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.updateProject(updateProjectRequest);
         
         return ResponseEntity.ok(project);
     }
 
     @DeleteMapping("/v1/project/{id}")
-    public ResponseEntity<ProjectDetailsResponse> deleteProjectById(@PathVariable UUID id) {
+    public ResponseEntity<ProjectDetailsResponse> deleteProjectById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.deleteProjectById(id);
 
         return ResponseEntity.ok(project);

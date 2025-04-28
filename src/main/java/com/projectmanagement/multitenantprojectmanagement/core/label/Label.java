@@ -13,6 +13,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,6 +43,10 @@ public class Label {
     private String name;
 
     private String color;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")

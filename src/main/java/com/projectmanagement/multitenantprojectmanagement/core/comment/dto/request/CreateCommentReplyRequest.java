@@ -9,4 +9,5 @@ public class CreateCommentReplyRequest {
     private UUID parentId;
     private UUID authorId;
     private String comment;
+    private UUID projectId;
 }

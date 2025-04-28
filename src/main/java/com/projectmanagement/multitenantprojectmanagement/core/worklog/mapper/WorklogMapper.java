@@ -5,17 +5,19 @@ import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.CreateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.UpdateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 
 public class WorklogMapper {
 
-    public static WorkLog toworklogEntity(CreateWorklogRequest createWorklogRequest, Issue issue, Users user) {
+    public static WorkLog toworklogEntity(CreateWorklogRequest createWorklogRequest, Issue issue, Users user, Organizations organization) {
         WorkLog workLog = new WorkLog();
         workLog.setIssue(issue);
         workLog.setUser(user);
         workLog.setStartedDateTime(createWorklogRequest.getStartedDateTime());
         workLog.setTimeSpentInMinutes(createWorklogRequest.getTimeSpentInMinutes());
+        workLog.setOrganization(organization);
         
         if(createWorklogRequest.getComment() != null) {
             workLog.setComment(createWorklogRequest.getComment());

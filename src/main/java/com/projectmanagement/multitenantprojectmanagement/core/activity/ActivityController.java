@@ -32,21 +32,21 @@ public class ActivityController {
     private final JWTUtils jwtUtils;
 
     @GetMapping("/v1/activity/{id}")
-    public ResponseEntity<ActivityResponse> getActivityById(@PathVariable UUID id) {
+    public ResponseEntity<ActivityResponse> getActivityById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         Activity activity = activityService.getActivityById(id);
 
         return ResponseEntity.ok(ActivityMapper.toActivityResponse(activity));
     }
 
     @GetMapping("/v1/activity/{id}/entity")
-    public ResponseEntity<PaginatedResponseDto<ActivityResponse>> getActivityByEntityId(@PathVariable UUID id, Pageable pageable) {
+    public ResponseEntity<PaginatedResponseDto<ActivityResponse>> getActivityByEntityId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<ActivityResponse> activites = activityService.getActivitiesByEntityId(id, pageable);
 
         return ResponseEntity.ok(activites);
     }
 
     @GetMapping("/v1/activity/{id}/project")
-    public ResponseEntity<PaginatedResponseDto<ActivityResponse>> getActivityByProjectId(@PathVariable UUID id, Pageable pageable, @AuthenticationPrincipal Jwt jwt) {
+    public ResponseEntity<PaginatedResponseDto<ActivityResponse>> getActivityByProjectId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         String auth0OrgId = jwtUtils.getAuth0OrgId();
 
         PaginatedResponseDto<ActivityResponse> activites = activityService.getActivitiesByProjectIdAndOrgId(id, auth0OrgId, pageable);
@@ -55,14 +55,14 @@ public class ActivityController {
     }
 
     @PostMapping("/v1/activity")
-    public ResponseEntity<ActivityResponse> createActivity(@RequestBody CreateActivityRequest createActivityRequest) {
+    public ResponseEntity<ActivityResponse> createActivity(@RequestBody CreateActivityRequest createActivityRequest,@AuthenticationPrincipal Jwt jwt) {
         ActivityResponse activityResponse = activityService.createActivity(createActivityRequest);
 
         return ResponseEntity.ok(activityResponse);
     }
 
     @DeleteMapping("/v1/activity/{id}")
-    public ResponseEntity<ActivityResponse> deleteActivityById(@PathVariable UUID id) {
+    public ResponseEntity<ActivityResponse> deleteActivityById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         ActivityResponse activityResponse = activityService.deleteActivityById(id);
 
         return ResponseEntity.ok(activityResponse);

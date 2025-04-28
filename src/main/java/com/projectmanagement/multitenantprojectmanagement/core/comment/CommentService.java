@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentReplyRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.UpdateCommentRequest;
@@ -15,8 +16,12 @@ import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.respo
 import com.projectmanagement.multitenantprojectmanagement.core.comment.mapper.CommentMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
@@ -33,11 +38,16 @@ public class CommentService {
     private final IssueService issueService;
     private final MaskingString maskingString;
     private static final Logger logger = LoggerFactory.getLogger(CommentService.class);
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
+    private final ProjectService projectService;
 
     public Comment getCommentById(UUID id) {
         logger.info("Getting comment for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Comment comment = commentRepository.findById(id).orElseThrow(() -> new NotFoundException("Comment not found for the given ID: " + id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Comment comment = commentRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Comment not found for the given ID: " + id));
 
         logger.debug("Fetched comment ID: {}", maskingString.maskSensitive(comment.getId().toString()));
 
@@ -47,7 +57,9 @@ public class CommentService {
     public PaginatedResponseDto<CommentResponse> getCommentsByIssueId(UUID id, Pageable pageable) {
         logger.info("Getting comments for the given Issue ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Page<Comment> comments = commentRepository.findByIssueIdAndDepth(id, 0, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Comment> comments = commentRepository.findByIssueIdAndDepthAndOrganization_Auth0Id(id, 0, auth0OrgId,pageable);
 
         logger.debug("Fetched {} comments", comments.getTotalElements());
 
@@ -59,7 +71,9 @@ public class CommentService {
 
         Comment comment = getCommentById(id);
 
-        Page<Comment> replies = commentRepository.findRepliesByPathPrefix(comment.getIssue().getId(), comment.getPath(), comment.getDepth() + 1, pageable);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Page<Comment> replies = commentRepository.findRepliesByPathPrefix(comment.getIssue().getId(), comment.getPath(), comment.getDepth() + 1, auth0OrgId,pageable);
 
         return CommentMapper.toPaginatedResponseDto(replies);
     }
@@ -73,7 +87,13 @@ public class CommentService {
 
         Users author = userService.getUserEntity(createCommentRequest.getAuthorId());
 
-        Comment comment = CommentMapper.toCommentEntity(createCommentRequest, author, issue);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organizations = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        Projects project = projectService.getProjectById(createCommentRequest.getProjectId());
+
+        Comment comment = CommentMapper.toCommentEntity(createCommentRequest, author, issue, organizations,project);
 
         Comment savedComment = commentRepository.save(comment);
 
@@ -95,7 +115,13 @@ public class CommentService {
 
         Users author = userService.getUserEntity(createCommentReplyRequest.getAuthorId());
 
-        Comment comment = CommentMapper.toCommentReply(createCommentReplyRequest, author, parent);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
+        Projects project = projectService.getProjectById(createCommentReplyRequest.getParentId());
+
+        Comment comment = CommentMapper.toCommentReply(createCommentReplyRequest, author, parent, organization, project);
 
         Comment savedComment = commentRepository.save(comment);
 

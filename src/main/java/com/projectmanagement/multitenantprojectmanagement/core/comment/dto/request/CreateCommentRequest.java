@@ -9,4 +9,5 @@ public class CreateCommentRequest {
     private String comment;
     private UUID issueId;
     private UUID authorId;
+    private UUID projectId;
 }

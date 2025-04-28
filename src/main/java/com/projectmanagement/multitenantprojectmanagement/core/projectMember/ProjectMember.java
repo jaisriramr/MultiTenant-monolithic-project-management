@@ -9,6 +9,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -35,6 +36,11 @@ public class ProjectMember {
     @Id
     @UuidGenerator
     private UUID id;
+
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "organization_id")
+    private Organizations organization;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id", nullable = false)
