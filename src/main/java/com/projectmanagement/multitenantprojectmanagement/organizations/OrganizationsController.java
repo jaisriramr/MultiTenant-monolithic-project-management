@@ -57,9 +57,9 @@ public class OrganizationsController {
         return ResponseEntity.ok(updatedOrganization);
     }
 
-    @DeleteMapping("/v1/organization/{id}")
-    public ResponseEntity<String> deleteOrganizationById(@PathVariable UUID id) {
-        String response = organizationsService.deleteOrganizationById(id);
+    @DeleteMapping("/v1/organization/{id}/by/{userId}")
+    public ResponseEntity<String> deleteOrganizationById(@PathVariable UUID id, @PathVariable UUID userId) {
+        String response = organizationsService.deleteOrganizationById(id, userId);
         return ResponseEntity.ok(response);
     }
 

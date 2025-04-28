@@ -15,9 +15,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
 import com.projectmanagement.multitenantprojectmanagement.permissions.PermissionsService;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
@@ -37,13 +40,17 @@ public class RolesService {
     private final Auth0Service auth0Service;
     private final PermissionsService permissionsService;
     private final MaskingString maskingString;
-    
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
+
     private static final Logger logger = LoggerFactory.getLogger(RolesService.class);
 
     public Roles findRoleEntityById(UUID id) {
         logger.info("Getting Role for input ID : {} ", maskingString.maskSensitive(id.toString()));
 
-        Roles role = rolesRepository.findById(id)
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Roles role = rolesRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId)
                 .orElseThrow(() -> new NotFoundException("Role not found for ID: " + id));
 
         logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
@@ -89,7 +96,9 @@ public class RolesService {
             throw new IllegalArgumentException("Role name cannot be null or empty");
         }
 
-        Roles role = rolesRepository.findByName(name)
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Roles role = rolesRepository.findByNameAndOrganization_Auth0Id(name, auth0OrgId)
                 .orElseThrow(() -> new NotFoundException("Role not found with name: " + name));
 
         logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
@@ -100,7 +109,9 @@ public class RolesService {
     public RoleResponse getRoleByAuth0Id(String auth0Id) {
         logger.info("Getting Role By Auth0Id: {} ", maskingString.maskSensitive(auth0Id));
 
-        Roles role = rolesRepository.findByAuth0Id(auth0Id)
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Roles role = rolesRepository.findByAuth0IdAndOrganization_Auth0Id(auth0Id, auth0OrgId)
                 .orElseThrow(() -> new NotFoundException("Role Not found with auth0Id: " + auth0Id));
 
         logger.debug("Fetched role ID: {}", maskingString.maskSensitive(role.getId().toString()));
@@ -110,7 +121,7 @@ public class RolesService {
 
     public List<RolesResponse> getRolesByOrgId(String orgId) {
         logger.info("Getting Roles By OrgId: {} ", maskingString.maskSensitive(orgId));
-        List<Roles> roles = rolesRepository.findAllByOrganizationId(orgId);
+        List<Roles> roles = rolesRepository.findAllByOrganization_Auth0Id(orgId);
 
         logger.debug("Fetched {} roles", roles.size());
         if (roles.isEmpty()) {
@@ -201,7 +212,9 @@ public class RolesService {
     public RoleResponse createRole(CreateRoleRequest createRoleRequest) {
         logger.info("Creating Role for the given input: {} ", maskingString.maskSensitive(createRoleRequest.getName()));
         try {
-            Roles existingRole = rolesRepository.findByName(createRoleRequest.getName()).orElse(null);
+            String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+            Roles existingRole = rolesRepository.findByNameAndOrganization_Auth0Id(createRoleRequest.getName(), auth0OrgId).orElse(null);
 
             if(existingRole != null) {
                 logger.error("Role with name {} already exists", maskingString.maskSensitive(createRoleRequest.getName()));
@@ -211,11 +224,15 @@ public class RolesService {
             ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(),
                     createRoleRequest.getName());
             Map<String, Object> body = auth0Response.getBody();
+            
+            Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
 
             if (body != null) {
                 String id = (String) body.get("id");
                 logger.debug("Auth0 ID: {}", maskingString.maskSensitive(id));
-                Roles role = RoleMapper.toEntityRole(createRoleRequest, id);
+
+
+                Roles role = RoleMapper.toEntityRole(createRoleRequest, id, organization);
                 Roles savedRole = rolesRepository.save(role);
 
                 logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));

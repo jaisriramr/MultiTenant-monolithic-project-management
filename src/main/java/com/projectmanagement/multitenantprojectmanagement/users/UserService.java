@@ -11,12 +11,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
+import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.s3.s3Service;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
@@ -37,12 +39,17 @@ public class UserService {
     private final OrganizationMembersRepository organizationMembersRepository;
     private final MaskingString maskingString;
     private final s3Service s3Service;
+    private final JWTUtils jwtUtils;
+    private final OrganizationsService organizationsService;
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     public Users getUserEntity(UUID id) {
         logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
-        Users user = userRepository.findById(id)
+        
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Users user = userRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId)
                 .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 
         logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
@@ -52,20 +59,6 @@ public class UserService {
         }
 
         return user;
-    }
-
-    public UserResponseDto getUserById(UUID id) {
-        logger.info("Getting user for the given ID: {} ", maskingString.maskSensitive(id.toString()));
-        Users user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
-
-        logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
-        if (user.getIsDeleted() != null && user.getIsDeleted()) {
-            logger.error("User is deleted for the given user ID: {}", maskingString.maskSensitive(id.toString()));
-            throw new NotFoundException("User not found for the given User Id " + id);
-        }
-
-        return UserMapper.toUserReponse(user);
     }
 
     public PaginatedResponseDto<UserListResponseDto> getAllUsers(Pageable pageable) {
@@ -83,8 +76,7 @@ public class UserService {
     public List<UserOrganizations> getUserOrganizations(UUID id) {
         logger.info("Getting all organizations by user ID: {}", maskingString.maskSensitive(id.toString()));
 
-        Users user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
+        Users user = getUserEntity(id);
 
         logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
 
@@ -108,7 +100,9 @@ public class UserService {
     public List<UserListResponseDto> searchUsersByName(String name) {
         logger.info("Searching users by name: {}", maskingString.maskSensitive(name));
 
-        List<Users> users = userRepository.findAllByNameContainingIgnoreCaseAndIsDeletedFalse(name).orElse(null);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        List<Users> users = userRepository.findAllByNameContainingIgnoreCaseAndIsDeletedFalseAndOrganization_Auth0Id(name, auth0OrgId).orElse(null);
 
         logger.debug("Fetched {} users", users.size());
 
@@ -123,7 +117,9 @@ public class UserService {
     public Users getUserByEmail(String email) {
         logger.info("Getting user by email: {} ", maskingString.maskSensitive(email));
 
-        Users user = userRepository.findByEmail(email).orElse(null);
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Users user = userRepository.findByEmailAndOrganization_Auth0Id(email, auth0OrgId).orElse(null);
 
         logger.debug("Fetched User ID : {}", maskingString.maskSensitive(user.getId().toString()));
 
@@ -133,7 +129,9 @@ public class UserService {
     public UserResponseDto getUserByAuth0Id(String auth0Id) {
         logger.info("Getting user by auth0Id: {} ", maskingString.maskSensitive(auth0Id));
 
-        Users user = userRepository.findByAuth0Id(auth0Id).orElseThrow(() -> new NotFoundException("User not found for the given auth0Id " + auth0Id));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Users user = userRepository.findByAuth0IdAndOrganization_Auth0Id(auth0Id, auth0OrgId).orElseThrow(() -> new NotFoundException("User not found for the given auth0Id " + auth0Id));
         if (user.getIsDeleted()) {
             logger.error("User is deleted for the given auth0Id: {}", maskingString.maskSensitive(auth0Id));
             throw new NotFoundException("User not found for the given auth0Id " + auth0Id);
@@ -148,17 +146,16 @@ public class UserService {
     public Users createUser(CreateUserRequest createUserRequest) {
         logger.info("Creating user for the given request: {} ", maskingString.maskSensitive(createUserRequest.toString()));
         try {
+            String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+            Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
+
             Users user = UserMapper.toCreateUserEntity(createUserRequest);
+            user.setOrganization(organization);
 
-            userRepository.findByEmail(createUserRequest.getEmail()).ifPresent(existingUser -> {
-                logger.error("User already exists with the given email: {}", maskingString.maskSensitive(createUserRequest.getEmail()));
-                throw new ConflictException("User already exists with the given email: " + createUserRequest.getEmail());
-            });
+            getUserByEmail(createUserRequest.getEmail());
 
-            userRepository.findByAuth0Id(createUserRequest.getAuth0UserId()).ifPresent(existingUser -> {
-                logger.error("User already exists with the given auth0Id: {}", maskingString.maskSensitive(createUserRequest.getAuth0UserId()));
-                throw new ConflictException("User already exists with the given auth0Id: " + createUserRequest.getAuth0UserId());
-            });
+            getUserByAuth0Id(createUserRequest.getAuth0UserId());
 
             Users savedUser = userRepository.save(user);
 
@@ -179,9 +176,7 @@ public class UserService {
     ) {
         logger.info("Updating user for the given user ID: {} ", maskingString.maskSensitive(updateUserRequest.getId().toString()));
         try {
-            Users user = userRepository.findById(updateUserRequest.getId()).orElseThrow(() -> new NotFoundException("User not found for the given ID: " + updateUserRequest.getId()));
-
-            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
+            Users user = getUserEntity(updateUserRequest.getId());
 
             if (user.getAbout() == null) {
                 user.setAbout(updateUserRequest.getAbout());
@@ -229,8 +224,7 @@ public class UserService {
     ) {
         logger.info("Deleting user by ID: {} ", id);
         try {
-            Users user = userRepository.findById(id)
-                    .orElseThrow(() -> new NotFoundException("User not found for the given ID: " + id));
+            Users user = getUserEntity(id);
 
             user.setIsDeleted(true);
 
@@ -255,7 +249,7 @@ public class UserService {
         logger.info("Uploading file for the type: {}", type);
         try {
 
-            Users user =  userRepository.findById(id).orElseThrow(() -> new NotFoundException("User not found for the given ID: " + id));
+            Users user =  getUserEntity(id);
 
             String s3Url = s3Service.uploadFile(file, id, type.toString());
 

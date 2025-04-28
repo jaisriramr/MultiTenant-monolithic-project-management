@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 
+import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.permissions.Permissions;
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.request.CreateRoleRequest;
@@ -20,7 +21,7 @@ public class RoleMapper {
                 .id(role.getId())
                 .name(role.getName())
                 .auth0Id(role.getAuth0Id())
-                .organizationId(role.getOrganizationId())
+                // .organizationId(role.getOrganizationId())
                 .permissions(role.getPermissions().stream().map(Permissions::getName).collect(Collectors.toSet()))
                 .build();
     }
@@ -41,10 +42,10 @@ public class RoleMapper {
         return response;
     }
 
-    public static Roles toEntityRole(CreateRoleRequest createRoleRequest, String auth0Id) {
+    public static Roles toEntityRole(CreateRoleRequest createRoleRequest, String auth0Id, Organizations organization) {
         Roles role = new Roles();
         role.setName(createRoleRequest.getName());
-        role.setOrganizationId(createRoleRequest.getOrganizationId());
+        role.setOrganization(organization);
         role.setAuth0Id(auth0Id);
         return role;
     }

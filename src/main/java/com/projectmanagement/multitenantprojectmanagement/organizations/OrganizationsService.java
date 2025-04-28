@@ -35,7 +35,6 @@ public class OrganizationsService {
 
     private final OrganizationsRepository organizationsRepository;
     private final Auth0Service auth0Service;
-    private final UserService userService;
     private static final Logger logger = LoggerFactory.getLogger(OrganizationsService.class);
     private final MaskingString maskingString;
     private final JWTUtils jwtUtils;
@@ -152,7 +151,7 @@ public class OrganizationsService {
     }
 
     @Transactional
-    public String deleteOrganizationById(UUID id) {
+    public String deleteOrganizationById(UUID id, UUID userId) {
         try {
             Organizations org = organizationsRepository.findById(id).orElseThrow(() -> new NotFoundException("Organization not found for the given ID: " + id));
             logger.debug("Fetched organization ID: {} ", maskingString.maskSensitive(org.getId().toString()));
@@ -161,12 +160,12 @@ public class OrganizationsService {
 
             logger.debug("Fetched Auth0 user ID: {} ", maskingString.maskSensitive(auth0UserID));
 
-            UserResponseDto user = userService.getUserByAuth0Id(auth0UserID);
+            // UserResponseDto user = userService.getUserByAuth0Id(auth0UserID);
 
-            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
+            logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(userId.toString()));
 
             org.setIsDeleted(true);
-            org.setDeletedBy(user.getId());
+            org.setDeletedBy(userId);
             org.setDeletedAt(LocalDateTime.now());
             organizationsRepository.save(org);
 
