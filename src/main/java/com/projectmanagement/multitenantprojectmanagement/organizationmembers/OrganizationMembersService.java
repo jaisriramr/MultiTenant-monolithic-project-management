@@ -87,7 +87,9 @@ public class OrganizationMembersService {
         public PaginatedResponseDto<OrganizationMembersResponseDto> getAllMembers(Pageable pageable) {
                 logger.info("Getting all organization members");
 
-                Page<OrganizationMembers> organizationMembers = organizationMembersRepository.findAll(pageable);
+                String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+                Page<OrganizationMembers> organizationMembers = organizationMembersRepository.findAllByOrganization_Auth0Id(auth0OrgId,pageable);
 
                 logger.debug("Fetched {} organization members", organizationMembers.getTotalElements());
 
@@ -97,11 +99,13 @@ public class OrganizationMembersService {
                 return OrganizationMembersMapper.toPaginatedResponseDto(orgs, organizationMembers);
         }
 
-        public OrganizationMembersResponseDto getOrganizationMemberById(UUID id) {
+        public OrganizationMembers getOrganizationMemberById(UUID id) {
                 logger.info("Getting organization member for the given ID: {} ",
                                 maskingString.maskSensitive(id.toString()));
 
-                OrganizationMembers organizationMember = organizationMembersRepository.findById(id).orElseThrow(
+                String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+                OrganizationMembers organizationMember = organizationMembersRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(
                                 () -> new NotFoundException("Organization member not found for the given id " + id));
 
                 logger.debug("Fetched organization member ID: {} ",
@@ -111,15 +115,18 @@ public class OrganizationMembersService {
                         throw new NotFoundException("Organization member not found for the given id " + id);
                 }
 
-                return OrganizationMembersMapper.toOrganizationMemberResponseDto(organizationMember);
+                return organizationMember;
         }
 
         // super admin level or support role
         public PaginatedResponseDto<OrganizationMembersResponseDto> getOrgsWhereUserIsAMember(String userId,
                         Pageable pageable) {
                 logger.info("Getting organizations where user ID: {} is a member", maskingString.maskSensitive(userId));
+                
+                String auth0OrgId = jwtUtils.getAuth0OrgId();
+                                
                 Page<OrganizationMembers> organizationMembers = organizationMembersRepository
-                                .findAllByUser_Auth0Id("auth0|" + userId, pageable);
+                                .findAllByUser_Auth0IdAndOrganization_Auth0Id("auth0|" + userId, auth0OrgId,pageable);
 
                 logger.debug("Fetched {} organizations for user ID: {}", organizationMembers.getTotalElements(),
                                 maskingString.maskSensitive(userId));
@@ -134,8 +141,11 @@ public class OrganizationMembersService {
                         Pageable pageable) {
                 logger.info("Getting all members in organization ID: {} ",
                                 maskingString.maskSensitive(orgId.toString()));
+
+                String auth0OrgId = jwtUtils.getAuth0OrgId();
+
                 Page<OrganizationMembers> organizationMembers = organizationMembersRepository
-                                .findAllByOrganizationId(orgId, pageable);
+                                .findAllByOrganizationIdAndOrganization_Auth0Id(orgId, auth0OrgId,pageable);
                 logger.debug("Fetched {} members in organization ID: {}", organizationMembers.getTotalElements(),
                                 maskingString.maskSensitive(orgId.toString()));
 
@@ -168,34 +178,13 @@ public class OrganizationMembersService {
                                                 "Please provide valid user id and organization id"));
                 logger.debug("Fetched organization member ID: {} ",
                                 maskingString.maskSensitive(organizationMembers.getId().toString()));
-                return organizationMembers;
-        }
 
-        public UserDetailsFromOrganizationMember getSpecificMember() {
-
-                String auth0UserId = jwtUtils.getCurrentUserId();
-                String auth0OrganizationId = jwtUtils.getAuth0OrgId();
-
-                logger.info("Getting specific member for user ID: {} in organization ID: {} ",
-                                auth0UserId,
-                                auth0OrganizationId);
-
-                OrganizationMembers organizationMembers = organizationMembersRepository
-                                .findByUser_Auth0IdAndOrganization_Auth0Id(auth0UserId, auth0OrganizationId)
-                                .orElseThrow(() -> new BadRequestException(
-                                                "Please provide valid user id and organization id"));
+                                if (organizationMembers.getIsDeleted()) {
+                                        logger.error("User not found for the given user id and organization id");
+                                        throw new NotFoundException("User not found for the given user id and organization id");
+                                }
                 
-                System.out.println("OOOOOO " + organizationMembers.toString());
-                                                
-                logger.debug("Fetched organization member ID: {} ",
-                                maskingString.maskSensitive(organizationMembers.getId().toString()));
-
-                if (organizationMembers.getIsDeleted()) {
-                        logger.error("User not found for the given user id and organization id");
-                        throw new NotFoundException("User not found for the given user id and organization id");
-                }
-
-                return OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMembers);
+                return organizationMembers;
         }
 
         public UserPermissionsDto getUserPermissions(String auth0UserId, String auth0OrgId) {
@@ -343,9 +332,7 @@ public class OrganizationMembersService {
         public String deleteById(UUID id, String subId) {
                 logger.info("Deleting organization member with ID: {} ", maskingString.maskSensitive(id.toString()));
                 try {
-                        OrganizationMembers organizationMembers = organizationMembersRepository.findById(id)
-                                        .orElseThrow(() -> new NotFoundException(
-                                                        "Organization member not found for the given id " + id));
+                        OrganizationMembers organizationMembers = getOrganizationMemberById(id);
 
                         logger.debug("Fetched organization member ID: {} ",
                                         maskingString.maskSensitive(organizationMembers.getId().toString()));
@@ -379,9 +366,7 @@ public class OrganizationMembersService {
         public String assignRolesToAnUser(UUID id, AssignRoleToUserDto assignRoleToUserDto) {
                 logger.info("Assigning roles to user ID: {}", maskingString.maskSensitive(id.toString()));
                 try {
-                        OrganizationMembers organizationMember = organizationMembersRepository.findById(id)
-                                        .orElseThrow(() -> new NotFoundException(
-                                                        "Organization member not found for the given id " + id));
+                        OrganizationMembers organizationMember = getOrganizationMemberById(id);
 
                         logger.debug("Fetched organization member ID: {} ",
                                         maskingString.maskSensitive(organizationMember.getId().toString()));
@@ -417,9 +402,7 @@ public class OrganizationMembersService {
         public String removeRolesFromAnUser(UUID id, AssignRoleToUserDto assignRoleToUserDto) {
                 logger.info("Removing roles from user ID: {}", maskingString.maskSensitive(id.toString()));
                 try {
-                        OrganizationMembers organizationMember = organizationMembersRepository.findById(id)
-                                        .orElseThrow(() -> new NotFoundException(
-                                                        "Organization member not found for the given id " + id));
+                        OrganizationMembers organizationMember = getOrganizationMemberById(id);
 
                         logger.debug("Fetched organization member ID: {} ",
                                         maskingString.maskSensitive(organizationMember.getId().toString()));
