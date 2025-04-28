@@ -45,8 +45,8 @@ public class UserController {
 
     @GetMapping("/v1/user/{id}")
     public ResponseEntity<UserResponseDto> getUserById(@Valid @PathVariable UUID id) {
-        UserResponseDto user = userService.getUserById(id);
-        return ResponseEntity.ok(user);
+        Users user = userService.getUserEntity(id);
+        return ResponseEntity.ok(UserMapper.toUserReponse(user));
     }
 
     @GetMapping("/v1/user/by/auth/{id}")

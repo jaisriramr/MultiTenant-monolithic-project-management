@@ -37,7 +37,6 @@ public class WorkLogService {
     private final OrganizationsService organizationsService;
     private final JWTUtils jwtUtils;
 
-
     public WorkLog getWorklogById(UUID id) {
         logger.info("Getting worklog for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
