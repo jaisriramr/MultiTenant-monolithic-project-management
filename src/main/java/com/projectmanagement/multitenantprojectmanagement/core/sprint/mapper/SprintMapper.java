@@ -55,8 +55,8 @@ public class SprintMapper {
                 .endDate(sprint.getEndDate())
                 .status(sprint.getStatus().toString())
                 .project(project)
-                .createdAt(sprint.getCreatedAt())
-                .updatedAt(sprint.getUpdatedAt())
+                .createdAt(sprint.getCreatedAt().toString())
+                .updatedAt(sprint.getUpdatedAt().toString())
                 .build();
 
     }
@@ -74,8 +74,8 @@ public class SprintMapper {
                     .goal(sprint.getGoal())
                     .status(sprint.getStatus().toString())
                     // .issues(issues)
-                    .createdAt(sprint.getCreatedAt())
-                    .updatedAt(sprint.getUpdatedAt())
+                    .createdAt(sprint.getCreatedAt().toString())
+                    .updatedAt(sprint.getUpdatedAt().toString())
                     .build();
 
                     listSprints.add(singleSprint);
@@ -106,8 +106,8 @@ public class SprintMapper {
                 .endDate(sprint.getEndDate())
                 .status(sprint.getStatus().toString())
                 .project(project)
-                .createdAt(sprint.getCreatedAt())
-                .updatedAt(sprint.getUpdatedAt())
+                .createdAt(sprint.getCreatedAt().toString())
+                .updatedAt(sprint.getUpdatedAt().toString())
                 .build();
 
     }

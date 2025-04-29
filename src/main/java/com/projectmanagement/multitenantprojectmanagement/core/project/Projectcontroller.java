@@ -17,6 +17,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.dto.reque
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.request.UpdateProjectRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.project.mapper.ProjectMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 import jakarta.validation.Valid;
@@ -38,7 +39,8 @@ public class Projectcontroller {
 
     @GetMapping("/v1/project/{id}")
     public ResponseEntity<ProjectDetailsResponse> getProjectById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
-        ProjectDetailsResponse project = projectService.getProjectByIdController(id);
+        ProjectDetailsResponse project = projectService.getProjectByIdForController(id);
+
         return ResponseEntity.ok(project);
     }
 
