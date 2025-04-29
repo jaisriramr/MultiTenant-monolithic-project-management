@@ -11,11 +11,16 @@ import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.ListSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowscheme.WorkflowScheme;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProjectDetailsResponse {
     private UUID id;
     private String name;
@@ -26,7 +31,7 @@ public class ProjectDetailsResponse {
     private List<ListSprintResponse> sprints;
     // private List<Issue> issues;
     private List<ProjectMemberMiniResponse> projectMembers;
-    private WorkflowScheme workflowScheme;
-    private Instant createdAt;
-    private Instant updatedAt;
+    // private WorkflowScheme workflowScheme;
+    private String createdAt;
+    private String updatedAt;
 }

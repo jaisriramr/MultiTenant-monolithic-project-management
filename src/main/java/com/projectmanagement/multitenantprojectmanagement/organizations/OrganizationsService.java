@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
@@ -39,6 +40,7 @@ public class OrganizationsService {
     private final MaskingString maskingString;
     private final JWTUtils jwtUtils;
 
+    @Cacheable(value = "organizations", key = "#id")
     public OrganizationResponse getOrganizationById(UUID id) {
 
         logger.info("Getting organization for the given ID: {} ", maskingString.maskSensitive(id.toString()));

@@ -7,17 +7,21 @@ import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ListSprintResponse {
     private UUID id;
     private String name;
     private String goal;
     private String status;
     // private List<Issue> issues;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

@@ -8,6 +8,7 @@ class MultiTenantProjectManagementApplicationTests {
 
 	@Test
 	void contextLoads() {
+		System.out.println("Main test");
 	}
 
 }

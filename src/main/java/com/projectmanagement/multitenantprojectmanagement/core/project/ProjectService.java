@@ -4,8 +4,12 @@ package com.projectmanagement.multitenantprojectmanagement.core.project;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -36,11 +40,15 @@ public class ProjectService {
     private final JWTUtils jwtUtils;
     private static final Logger logger = LoggerFactory.getLogger(ProjectService.class);
     private final MaskingString maskingString;
+    private String auth0OrgId;
 
+    
     public Projects getProjectById(UUID id) {
         logger.info("Getting project for the given ID: {}", maskingString.maskSensitive(id.toString()));
         
-        String auth0OrgId = jwtUtils.getAuth0OrgId();
+        if(this.auth0OrgId == null) {
+            this.auth0OrgId = jwtUtils.getAuth0OrgId();
+        }
 
         Projects project = projectRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId).orElseThrow(() -> new NotFoundException("Project not found for the given ID: " + id));
         
@@ -49,12 +57,16 @@ public class ProjectService {
         return project;
     }
 
-    public ProjectDetailsResponse getProjectByIdController(UUID id) {
+    @Cacheable(value = "projects", key = "#id")
+    public ProjectDetailsResponse getProjectByIdForController(UUID id) {
         Projects project = getProjectById(id);
+        
+        Projects unproxied = (Projects) Hibernate.unproxy(project);
 
-        return ProjectMapper.toProjectDetailsResponse(project);
+        return ProjectMapper.toProjectDetailsResponse(unproxied);
     }
 
+    @CachePut(value = "products", key = "#result.id")
     public void updateProjectIssueCount(UUID id, Long count) {
         logger.info("Updating issue count");
         
@@ -76,6 +88,7 @@ public class ProjectService {
         return ProjectMapper.toProjectsResponse(projects);
     }
 
+    @CachePut(value = "products", key = "#id")
     @Transactional
     public ProjectDetailsResponse createProject(@Valid CreateProjectRequest createProjectRequest) {
         logger.info("Creating project for the given name: {}", maskingString.maskSensitive(createProjectRequest.getName()));
@@ -96,6 +109,7 @@ public class ProjectService {
         return ProjectMapper.toProjectDetailsResponse(savedProject);
     }
 
+    @CachePut(value = "products", key = "#id")
     @Transactional
     public ProjectDetailsResponse updateProject(@Valid UpdateProjectRequest updateProjectRequest) {
         logger.info("Updating project for the given ID: {}", maskingString.maskSensitive(updateProjectRequest.getId().toString()));
@@ -119,6 +133,7 @@ public class ProjectService {
         return ProjectMapper.toProjectDetailsResponse(updatedProject);
     }
 
+    @CacheEvict(value = "products", key = "#id")
     @Transactional
     public ProjectDetailsResponse deleteProjectById(UUID id) {
         logger.info("Deleting project for the given ID: {}",maskingString.maskSensitive(id.toString()));

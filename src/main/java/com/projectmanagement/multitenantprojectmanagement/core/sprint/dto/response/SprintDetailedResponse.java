@@ -21,6 +21,6 @@ public class SprintDetailedResponse {
     private LocalDate endDate;
     private String status;
     private ProjectsResponse project;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

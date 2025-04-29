@@ -16,6 +16,6 @@ public class ProjectsResponse {
     private ProjectOrgResponse organization;
     private ProjectUserResponse createdBy;
     private ProjectStatus status;
-    private Instant createdAt;
-    private Instant updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

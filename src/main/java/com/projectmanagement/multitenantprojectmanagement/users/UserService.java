@@ -49,6 +49,8 @@ public class UserService {
         
         String auth0OrgId = jwtUtils.getAuth0OrgId();
 
+        logger.debug("Fetched org ID: {}", maskingString.maskSensitive(auth0OrgId));
+
         Users user = userRepository.findByIdAndOrganization_Auth0Id(id, auth0OrgId)
                 .orElseThrow(() -> new NotFoundException("User not found for the given User Id " + id));
 

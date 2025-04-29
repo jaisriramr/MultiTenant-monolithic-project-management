@@ -81,17 +81,16 @@ public class ProjectMapper {
                     .createdBy(user)
                     .status(project.getStatus())
                     .sprints(sprints)
-                    // .issues(project.getIssues())
                     .projectMembers(members)
-                    .workflowScheme(project.getWorkflowScheme())
-                    .createdAt(project.getCreatedAt())
-                    .updatedAt(project.getUpdatedAt())
+                    // .workflowScheme(project.getWorkflowScheme())
+                    .createdAt(project.getCreatedAt().toString())
+                    .updatedAt(project.getUpdatedAt().toString())
                     .build();
     }
 
     public static ProjectsResponse toSingleProjectsResponse(Projects project) {
         return ProjectsResponse.builder().id(project.getId()).name(project.getName()).status(project.getStatus())
-                .createdAt(project.getCreatedAt()).updatedAt(project.getUpdatedAt()).build();
+                .createdAt(project.getCreatedAt().toString()).updatedAt(project.getUpdatedAt().toString()).build();
     }
 
     public static PaginatedResponseDto<ProjectsResponse> toProjectsResponse(Page<Projects> projects) {
@@ -112,8 +111,8 @@ public class ProjectMapper {
             }
 
             ProjectsResponse p = ProjectsResponse.builder().id(project.getId()).name(project.getName())
-                    .organization(org).createdBy(user).status(project.getStatus()).createdAt(project.getCreatedAt())
-                    .updatedAt(project.getUpdatedAt()).build();
+                    .organization(org).createdBy(user).status(project.getStatus()).createdAt(project.getCreatedAt().toString())
+                    .updatedAt(project.getUpdatedAt().toString()).build();
 
             response.add(p);
         }
