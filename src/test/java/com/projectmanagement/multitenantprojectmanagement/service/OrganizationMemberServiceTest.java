@@ -3,12 +3,9 @@ package com.projectmanagement.multitenantprojectmanagement.service;
 import com.projectmanagement.multitenantprojectmanagement.auth0.Auth0Service;
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.AccessDenied;
-import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
-import com.projectmanagement.multitenantprojectmanagement.exception.ForbiddenException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.*;
-import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.request.AssignRoleToUserDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.dto.response.UserPermissionsDto;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.mapper.OrganizationMembersMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
@@ -19,17 +16,11 @@ import com.projectmanagement.multitenantprojectmanagement.roles.RolesService;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
-import org.checkerframework.checker.units.qual.m;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-
-import java.security.Permission;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
