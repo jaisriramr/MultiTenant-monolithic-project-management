@@ -71,7 +71,7 @@ public class OrganizationMembersService {
                                 .toUserPermissions(organizationMembers);
 
                 logger.debug("Fetched {} Permissions", userPermissionsDto.getPermissions().size());
-
+                System.out.println(permission + " pppp " + userPermissionsDto.getPermissions());
                 if (userPermissionsDto.getPermissions().containsAll(permission)) {
                         return true;
                 } else {

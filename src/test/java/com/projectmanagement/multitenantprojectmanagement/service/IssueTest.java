@@ -82,7 +82,7 @@ class IssueTest {
     void setUp() {
         MockitoAnnotations.openMocks(this);
 
-        issueId = UUID.fromString("c6e447db-1920-41a8-b728-bf831bf5f096");;
+        issueId = UUID.fromString("c6e447db-1920-41a8-b728-bf831bf5f096");
         mockIssue = new Issue();
         mockIssue.setId(issueId);
         mockIssue.setType(IssueType.BUG);
