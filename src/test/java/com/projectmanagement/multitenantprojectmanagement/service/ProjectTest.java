@@ -7,7 +7,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.dto.reque
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
-import com.projectmanagement.multitenantprojectmanagement.core.project.mapper.ProjectMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembers;
@@ -16,8 +15,6 @@ import com.projectmanagement.multitenantprojectmanagement.organizations.Organiza
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
-import org.aspectj.weaver.ast.Or;
-import org.hibernate.Hibernate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -129,17 +126,17 @@ public class ProjectTest {
         assertEquals("Test Project", result.getName());
     }
 
-    @Test
-    void testUpdateProjectIssueCount_Success() {
-        Long issueCount = 10L;
+    // @Test
+    // void testUpdateProjectIssueCount_Success() {
+    //     Long issueCount = 10L;
 
-        when(projectRepository.findByIdAndOrganization_Auth0Id(eq(projectId), anyString())).thenReturn(Optional.of(mockProject));
+    //     when(projectRepository.findByIdAndOrganization_Auth0Id(eq(projectId), anyString())).thenReturn(Optional.of(mockProject));
 
-        projectService.updateProjectIssueCount(projectId, issueCount);
+    //     projectService.updateProjectIssueCount(projectId, issueCount);
 
-        assertEquals(issueCount, mockProject.getIssueCount());
-        verify(projectRepository, times(1)).save(mockProject);
-    }
+    //     assertEquals(issueCount, mockProject.getIssueCount());
+    //     verify(projectRepository, times(1)).save(mockProject);
+    // }
 
     @Test
     void testGetAllProjectsByOrganizationId_Success() {

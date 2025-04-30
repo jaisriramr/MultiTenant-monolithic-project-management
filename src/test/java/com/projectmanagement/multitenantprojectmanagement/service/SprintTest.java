@@ -10,7 +10,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.respon
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.MinimalSprintResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.response.SprintDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.enums.SprintStatus;
-import com.projectmanagement.multitenantprojectmanagement.core.sprint.mapper.SprintMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
@@ -18,7 +17,6 @@ import com.projectmanagement.multitenantprojectmanagement.organizations.Organiza
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
-import org.checkerframework.checker.units.qual.m;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;

@@ -7,7 +7,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.worklog.*;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.CreateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.UpdateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.worklog.mapper.WorklogMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;

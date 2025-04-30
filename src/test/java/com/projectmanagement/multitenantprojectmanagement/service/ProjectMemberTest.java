@@ -7,7 +7,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.projectMember.*;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.request.CreateProjectMember;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMemberDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMembersResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.projectMember.mapper.ProjectMemberMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;

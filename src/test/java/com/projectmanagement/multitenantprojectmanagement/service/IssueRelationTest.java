@@ -4,7 +4,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.*;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
-import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.mapper.IssueRelationMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;

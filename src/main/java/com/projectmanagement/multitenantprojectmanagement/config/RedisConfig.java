@@ -10,16 +10,35 @@ import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.data.redis.cache.RedisCacheManager;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.listener.PatternTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 
 @Configuration
 @EnableCaching
 public class RedisConfig {
+
+
+    @Bean
+    RedisMessageListenerContainer container(RedisConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter) {
+        RedisMessageListenerContainer container = new RedisMessageListenerContainer();
+        container.setConnectionFactory(connectionFactory);
+        container.addMessageListener(listenerAdapter, new PatternTopic("notifications"));
+        return container;
+    }
+
+    @Bean
+    MessageListenerAdapter listenerAdapter(RedisSubscriber subscriber) {
+        return new MessageListenerAdapter(subscriber);
+    }
+
 
     public CacheManager cacheManager(RedisConnectionFactory connectionFactory) {
         ObjectMapper mapper = new ObjectMapper();
@@ -36,18 +55,6 @@ public class RedisConfig {
                 .cacheDefaults(config)
                 .build();
     }
-
-    // @Bean
-    // public RedisCacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
-    //     RedisCacheConfiguration cacheConfig = RedisCacheConfiguration.defaultCacheConfig()
-    //         .entryTtl(Duration.ofMinutes(30)) // TTL for cache entries
-    //         .serializeValuesWith(RedisSerializationContext.SerializationPair
-    //             .fromSerializer(new GenericJackson2JsonRedisSerializer())); // Serializer
-
-    //     return RedisCacheManager.builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
-    //         .cacheDefaults(cacheConfig)
-    //         .build();
-    // }
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {

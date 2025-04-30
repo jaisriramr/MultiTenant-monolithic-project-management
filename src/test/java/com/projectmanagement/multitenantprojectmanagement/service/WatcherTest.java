@@ -6,7 +6,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueServic
 import com.projectmanagement.multitenantprojectmanagement.core.issue.event.IssueEvent;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.*;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.dto.response.WatcherResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;

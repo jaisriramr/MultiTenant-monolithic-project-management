@@ -5,7 +5,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueServic
 import com.projectmanagement.multitenantprojectmanagement.core.label.*;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.request.CreateLabelRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.response.LabelResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.label.mapper.LabelMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
