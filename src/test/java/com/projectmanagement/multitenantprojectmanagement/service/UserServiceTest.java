@@ -27,13 +27,16 @@ import com.projectmanagement.multitenantprojectmanagement.organizationmembers.Or
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
+import com.projectmanagement.multitenantprojectmanagement.s3.s3Service;
 import com.projectmanagement.multitenantprojectmanagement.users.UserRepository;
 import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
+import com.projectmanagement.multitenantprojectmanagement.users.dto.request.UpdateUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserOrganizations;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
+import com.projectmanagement.multitenantprojectmanagement.users.embeddable.About;
 
 @ActiveProfiles("test")
 public class UserServiceTest {
@@ -58,6 +61,9 @@ public class UserServiceTest {
 
     @InjectMocks
     private UserService userService;
+
+    @Mock
+    private s3Service s3Service;
 
     private UUID userId;
     private Users mockUser;
@@ -173,6 +179,43 @@ public class UserServiceTest {
 
         assertNotNull(user, "User should not be null");
         assertEquals(user.getId(), mockUser.getId(), "User ID should match the mock user ID");
+
+    }
+
+    @Test
+    public void TestUpdateUser() {
+
+        UpdateUserRequest updateUserRequest = new UpdateUserRequest();
+        updateUserRequest.setId(userId);
+        updateUserRequest.setName("Name");
+        
+        About about = new About();
+        about.setCompanyName("slack");
+        about.setDepartment("Engineering");
+        about.setJobTitle("SDE");
+        about.setLocation("BLR");
+
+        updateUserRequest.setAbout(about);
+
+        when(userRepository.findByIdAndOrganization_Auth0Id(userId, "orgId")).thenReturn(Optional.of(mockUser));
+        when(userRepository.save(any(Users.class))).thenReturn(mockUser);
+
+        UserResponseDto users = userService.updateUser(updateUserRequest);
+        
+        assertNotNull(users);
+        assertEquals(mockUser.getId(), users.getId());
+
+    }
+
+    @Test
+    public void TestDeleteUser() {
+        when(userRepository.findByIdAndOrganization_Auth0Id(userId, "orgId")).thenReturn(Optional.of(mockUser));
+        when(userRepository.save(any(Users.class))).thenReturn(mockUser);
+
+        String response = userService.deleteUserById(userId);
+
+        assertNotNull(response);
+        assertEquals(response, "User with ID " + userId + " has be removed successfully!");
 
     }
 
