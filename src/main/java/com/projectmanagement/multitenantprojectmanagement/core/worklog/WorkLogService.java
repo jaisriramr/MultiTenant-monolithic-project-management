@@ -91,6 +91,7 @@ public class WorkLogService {
         WorkLog workLog = getWorklogById(id);
 
         Issue issue = workLog.getIssue();
+        
         if(issue != null) {
             issue.setWorkLog(null);
         }
