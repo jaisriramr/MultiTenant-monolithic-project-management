@@ -5,9 +5,13 @@ import java.util.UUID;
 import com.projectmanagement.multitenantprojectmanagement.users.embeddable.About;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class UpdateUserRequest {
     @NotNull
     private UUID id;

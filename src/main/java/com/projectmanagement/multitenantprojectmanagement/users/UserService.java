@@ -123,7 +123,7 @@ public class UserService {
 
         Users user = userRepository.findByEmailAndOrganization_Auth0Id(email, auth0OrgId).orElse(null);
 
-        logger.debug("Fetched User ID : {}", maskingString.maskSensitive(user.getId().toString()));
+        logger.debug("Fetched User ID : {}", maskingString.maskSensitive(user != null ? user.getId().toString() : null));
 
         return user;
     }
@@ -147,7 +147,6 @@ public class UserService {
     @Transactional
     public Users createUser(CreateUserRequest createUserRequest) {
         logger.info("Creating user for the given request: {} ", maskingString.maskSensitive(createUserRequest.toString()));
-        try {
             String auth0OrgId = jwtUtils.getAuth0OrgId();
 
             Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
@@ -157,20 +156,15 @@ public class UserService {
 
             getUserByEmail(createUserRequest.getEmail());
 
-            getUserByAuth0Id(createUserRequest.getAuth0UserId());
+            // getUserByAuth0Id(createUserRequest.getAuth0UserId());
 
             Users savedUser = userRepository.save(user);
+
+            System.out.println("savedUser " +savedUser );
 
             logger.debug("Created user ID: {}", maskingString.maskSensitive(savedUser.getId().toString()));
 
             return savedUser;
-        } catch (ConflictException e) {
-            logger.error("User already exists with the given email or auth0Id: {}", maskingString.maskSensitive(createUserRequest.toString()), e);
-            throw e;
-        } catch (Exception e) {
-            logger.error("Error while trying to create an user: {}", maskingString.maskSensitive(createUserRequest.toString()), e);
-            throw new RuntimeException("Internal server error while trying to create a new user", e);
-        }
     }
 
     @Transactional
@@ -276,7 +270,6 @@ public class UserService {
         }catch(BadRequestException e) {
             throw e;
         }catch (Exception e) {
-            // Generic error handling
             logger.error("Error uploading file for user ID: {}", id, e);
             throw new RuntimeException("An unexpected error occurred while uploading the file.");
         }

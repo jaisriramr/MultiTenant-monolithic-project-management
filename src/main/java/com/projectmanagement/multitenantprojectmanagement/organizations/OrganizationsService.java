@@ -76,7 +76,6 @@ public class OrganizationsService {
     public Organizations createAnOrganization(@Valid CreateOrganizationRequest createOrganizationRequest) {
         logger.info("Creating organization with name: {} and display name: {}", maskingString.maskSensitive(createOrganizationRequest.getName()), maskingString.maskSensitive(createOrganizationRequest.getDisplayName()));
         try {
-            // Check if the organization already exists
 
             organizationsRepository.findByName(createOrganizationRequest.getName()).ifPresent(org -> {
                 throw new ConflictException("Organization with the same name already exists");
@@ -129,11 +128,9 @@ public class OrganizationsService {
                 String displayName = updateOrganizationRequest.getDisplayName() != null ? updateOrganizationRequest.getDisplayName() : updateOrganizationRequest.getName();
                 auth0Service.updateAnOrganization(organizations.getAuth0Id(), updateOrganizationRequest.getName(), displayName);
                 logger.debug("Organization details updated in auth0");
-            }
-
-            if (updateOrganizationRequest.getName() != null) {
                 organizations.setName(updateOrganizationRequest.getName());
             }
+
             if (updateOrganizationRequest.getDisplayName() != null) {
                 organizations.setDisplayName(updateOrganizationRequest.getDisplayName());
             }
