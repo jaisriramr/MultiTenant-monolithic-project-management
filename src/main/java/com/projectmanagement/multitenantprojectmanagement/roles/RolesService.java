@@ -32,6 +32,7 @@ import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMappe
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
 @RequiredArgsConstructor
 @Service
 public class RolesService {
@@ -94,7 +95,7 @@ public class RolesService {
     public Roles getRoleByName(String name) {
         logger.info("Getting Role By Name: {} ", maskingString.maskSensitive(name));
 
-        if(name == null || name.isEmpty()) {
+        if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Role name cannot be null or empty");
         }
 
@@ -162,13 +163,12 @@ public class RolesService {
             return RoleMapper.toRoleResponse(savedRole);
         } catch (NotFoundException e) {
             throw e;
-        } 
-        catch (HttpClientErrorException | HttpServerErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for assigning permission to a role: {}", e.getMessage(), e);
             throw new RuntimeException("Error communicating with Auth0 while assigning permission to a role.", e);
-        }
-        catch (Exception e) {
-            logger.error("Internal server error for while assigning permissions to role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+        } catch (Exception e) {
+            logger.error("Internal server error for while assigning permissions to role with ID: {}",
+                    maskingString.maskSensitive(id.toString()), e);
             throw new RuntimeException(
                     "Internal server error while trying to assign permissions to a role with ID: " + id, e);
         }
@@ -199,13 +199,12 @@ public class RolesService {
             return RoleMapper.toRoleResponse(savedRole);
         } catch (NotFoundException e) {
             throw e;
-        }
-        catch (HttpClientErrorException | HttpServerErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for removing permission from role: {}", e.getMessage(), e);
             throw new RuntimeException("Error communicating with Auth0 while removing permission from role.", e);
-        }
-        catch (Exception e) {
-            logger.error("Internal server error for while removing permissions from role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+        } catch (Exception e) {
+            logger.error("Internal server error for while removing permissions from role with ID: {}",
+                    maskingString.maskSensitive(id.toString()), e);
             throw new RuntimeException("Error while trying to remove permissions from a role with ID: " + id, e);
         }
     }
@@ -213,48 +212,37 @@ public class RolesService {
     @Transactional
     public RoleResponse createRole(CreateRoleRequest createRoleRequest) {
         logger.info("Creating Role for the given input: {} ", maskingString.maskSensitive(createRoleRequest.getName()));
-        try {
-            String auth0OrgId = jwtUtils.getAuth0OrgId();
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
 
-            Roles existingRole = rolesRepository.findByNameAndOrganization_Auth0Id(createRoleRequest.getName(), auth0OrgId).orElse(null);
+        Roles existingRole = rolesRepository.findByNameAndOrganization_Auth0Id(createRoleRequest.getName(), auth0OrgId)
+                .orElse(null);
 
-            if(existingRole != null) {
-                logger.error("Role with name {} already exists", maskingString.maskSensitive(createRoleRequest.getName()));
-                throw new ConflictException("Role with name " + createRoleRequest.getName() + " already exists");
-            }
+        Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
 
-            ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(),
-                    createRoleRequest.getName());
-            Map<String, Object> body = auth0Response.getBody();
-            
-            Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
-
-            if (body != null) {
-                String id = (String) body.get("id");
-                logger.debug("Auth0 ID: {}", maskingString.maskSensitive(id));
-
-
-                Roles role = RoleMapper.toEntityRole(createRoleRequest, id, organization);
-                Roles savedRole = rolesRepository.save(role);
-
-                logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));
-
-                return RoleMapper.toRoleResponse(savedRole);
-            } else {
-                logger.error("Auth0 response is null or unsuccessful for role creation with name: {}",
-                        maskingString.maskSensitive(createRoleRequest.getName()));
-                throw new RuntimeException("Internal server Error while trying to create a role");
-            }
-        }catch(ConflictException e) {
-            throw e;
+        if (existingRole != null) {
+            logger.error("Role with name {} already exists", maskingString.maskSensitive(createRoleRequest.getName()));
+            throw new ConflictException("Role with name " + createRoleRequest.getName() + " already exists");
         }
-         catch (HttpClientErrorException | HttpServerErrorException e) {
-            logger.error("Error calling Auth0 API for role creation: {}", e.getMessage(), e);
-            throw new RuntimeException("Error communicating with Auth0 while creating the role.", e);
-        } catch (Exception e) {
-            logger.error("Internal server error while trying to create a role for the given inputs: {}",
-            maskingString.maskSensitive(createRoleRequest.toString()), e);
-            throw new RuntimeException("Internal server error while trying to create a role", e);
+
+        ResponseEntity<Map<String, Object>> auth0Response = auth0Service.createARole(createRoleRequest.getName(),
+                createRoleRequest.getName());
+
+        Map<String, Object> body = auth0Response.getBody();
+
+        if (body != null) {
+            String id = (String) body.get("id");
+            logger.debug("Auth0 ID: {}", maskingString.maskSensitive(id));
+
+            Roles role = RoleMapper.toEntityRole(createRoleRequest, id, organization);
+            Roles savedRole = rolesRepository.save(role);
+
+            logger.debug("Saved role ID: {}", maskingString.maskSensitive(savedRole.getId().toString()));
+
+            return RoleMapper.toRoleResponse(savedRole);
+        } else {
+            logger.error("Auth0 response is null or unsuccessful for role creation with name: {}",
+                    maskingString.maskSensitive(createRoleRequest.getName()));
+            throw new RuntimeException("Internal server Error while trying to create a role");
         }
     }
 
@@ -273,15 +261,15 @@ public class RolesService {
             logger.debug("Updated role ID: {}", maskingString.maskSensitive(updateRole.getId().toString()));
 
             return RoleMapper.toRoleResponse(updateRole);
-        }catch(NotFoundException e) {
+        } catch (NotFoundException e) {
             throw e;
-        }
-         catch (HttpClientErrorException | HttpServerErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for role updation: {}", e.getMessage(), e);
             throw new RuntimeException(
                     "Error communicating with Auth0 while updating the role with ID: " + updateRoleRequest.getId(), e);
         } catch (Exception e) {
-            logger.error("Internal server error for updateRole input: {}", maskingString.maskSensitive(updateRoleRequest.getId().toString()), e);
+            logger.error("Internal server error for updateRole input: {}",
+                    maskingString.maskSensitive(updateRoleRequest.getId().toString()), e);
             throw new RuntimeException("Internal server Error while trying to update a role", e);
         }
     }
@@ -289,7 +277,8 @@ public class RolesService {
     @Transactional
     public String deleteRoleById(UUID id) {
 
-        // If any active user is still assigned to this role, either block deletion or force detach.
+        // If any active user is still assigned to this role, either block deletion or
+        // force detach.
 
         logger.info("Deleting Role for the given ID: {} ", maskingString.maskSensitive(id.toString()));
         try {
@@ -300,14 +289,14 @@ public class RolesService {
             rolesRepository.deleteById(id);
 
             return "Role with Id " + id + " have been removed successfully!";
-        }catch(NotFoundException e) {
+        } catch (NotFoundException e) {
             throw e;
-        }
-         catch (HttpClientErrorException | HttpServerErrorException e) {
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
             logger.error("Error calling Auth0 API for role deletion: {}", e.getMessage(), e);
             throw new RuntimeException("Error communicating with Auth0 while deleting the role with ID: " + id, e);
         } catch (Exception e) {
-            logger.error("Internal server error while trying to delete a role with ID: {}", maskingString.maskSensitive(id.toString()), e);
+            logger.error("Internal server error while trying to delete a role with ID: {}",
+                    maskingString.maskSensitive(id.toString()), e);
             throw new RuntimeException("Error while trying to delete a role with ID: " + id, e);
         }
     }

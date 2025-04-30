@@ -12,6 +12,5 @@ public class RoleResponse {
     private UUID id;
     private String name;
     private String auth0Id;
-    private String organizationId;
     private Set<String> permissions;
 }

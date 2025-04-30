@@ -83,18 +83,19 @@ public class AttachmentService {
     }
 
     @Transactional
-    public AttachmentResponse createAttachment(MultipartFile file,UUID projectId, UUID issueId, UUID userId, UUID commentId) {
-        logger.info("Creating attachment file: {}, userId: {}, issueId: {}, commentId: {}", file, userId, issueId, commentId);
+    public AttachmentResponse createAttachment(MultipartFile file,UUID projectId, UUID issueId, UUID commentId) {
+        logger.info("Creating attachment file: {}, userId: {}, issueId: {}, commentId: {}", file, issueId, commentId);
         try {
             Attachment attachment = new Attachment();
             
             String s3Url = s3Service.uploadFile(file, issueId != null ? issueId : commentId , "attachment");
 
             logger.debug("File uploaded To S3");
-
-            Users user = userService.getUserEntity(userId);
-
+            
             String auth0OrgId = jwtUtils.getAuth0OrgId();
+            String auth0UserId = jwtUtils.getCurrentUserId();
+
+            Users user = userService.getUserByAuth0Id(auth0UserId);
 
             Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
 
@@ -119,7 +120,7 @@ public class AttachmentService {
 
             Attachment uploadedAttachment = attachmentRepository.save(attachment);
 
-            logger.debug("Saved attachment ID: {}", maskingString.maskSensitive(attachment.getId().toString()));
+            logger.debug("Saved attachment ID: {}", maskingString.maskSensitive(uploadedAttachment.getId().toString()));
 
             return AttachmentMapper.toAttachmentResponse(uploadedAttachment);
         }
@@ -130,6 +131,7 @@ public class AttachmentService {
         catch(NotFoundException e){
             throw e;    
         }catch(Exception e){
+            logger.error("Unexpected error during attachment creation", e);
             throw new RuntimeException("Internal Server while trying to upload an attachment");
         }
     }

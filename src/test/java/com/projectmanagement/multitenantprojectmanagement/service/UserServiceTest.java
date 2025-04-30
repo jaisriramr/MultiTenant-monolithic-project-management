@@ -145,7 +145,7 @@ public class UserServiceTest {
     public void testGetUserByAuth0Id() {
         when(userRepository.findByAuth0IdAndOrganization_Auth0Id("auth0|something", "orgId")).thenReturn(Optional.of(mockUser));
 
-        UserResponseDto user = userService.getUserByAuth0Id("auth0|something");
+        Users user = userService.getUserByAuth0Id("auth0|something");
 
         assertNotNull(user);
         assertEquals(user.getId(), mockUser.getId());

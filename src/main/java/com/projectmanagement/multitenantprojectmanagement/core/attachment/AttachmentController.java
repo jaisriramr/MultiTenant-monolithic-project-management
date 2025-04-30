@@ -56,15 +56,15 @@ public class AttachmentController {
     }
 
     @PostMapping("/v1/attachment/issue")
-    public ResponseEntity<AttachmentResponse> createAttachmentIssue(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("issueId") UUID issueId, @RequestParam("userId") UUID userId,@AuthenticationPrincipal Jwt jwt) {
-        AttachmentResponse response = attachmentService.createAttachment(file,projectId, issueId, userId, null);
+    public ResponseEntity<AttachmentResponse> createAttachmentIssue(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("issueId") UUID issueId,@AuthenticationPrincipal Jwt jwt) {
+        AttachmentResponse response = attachmentService.createAttachment(file,projectId, issueId, null);
 
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/v1/attachment/comment")
-    public ResponseEntity<AttachmentResponse> createAttachmentComment(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("commentId") UUID commentId, @RequestParam("userId") UUID userId,@AuthenticationPrincipal Jwt jwt) {
-        AttachmentResponse response = attachmentService.createAttachment(file, projectId,null, userId, commentId);
+    public ResponseEntity<AttachmentResponse> createAttachmentComment(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("commentId") UUID commentId,@AuthenticationPrincipal Jwt jwt) {
+        AttachmentResponse response = attachmentService.createAttachment(file, projectId,null, commentId);
 
         return ResponseEntity.ok(response);
     }
