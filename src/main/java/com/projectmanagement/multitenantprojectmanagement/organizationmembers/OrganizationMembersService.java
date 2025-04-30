@@ -339,7 +339,7 @@ public class OrganizationMembersService {
 
                         String auth0Id = "auth0|" + subId;
 
-                        UserResponseDto user = userService.getUserByAuth0Id(auth0Id);
+                        Users user = userService.getUserByAuth0Id(auth0Id);
 
                         logger.debug("Fetched user ID: {} ", maskingString.maskSensitive(user.getId().toString()));
 

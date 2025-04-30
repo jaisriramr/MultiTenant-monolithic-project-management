@@ -128,7 +128,7 @@ public class UserService {
         return user;
     }
 
-    public UserResponseDto getUserByAuth0Id(String auth0Id) {
+    public Users getUserByAuth0Id(String auth0Id) {
         logger.info("Getting user by auth0Id: {} ", maskingString.maskSensitive(auth0Id));
 
         String auth0OrgId = jwtUtils.getAuth0OrgId();
@@ -141,7 +141,7 @@ public class UserService {
 
         logger.debug("Fetched user by auth0Id: {} ", user != null ? maskingString.maskSensitive(user.getId().toString()) : null);
 
-        return UserMapper.toUserReponse(user);
+        return user;
     }
 
     @Transactional

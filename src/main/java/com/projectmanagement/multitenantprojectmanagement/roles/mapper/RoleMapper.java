@@ -21,7 +21,6 @@ public class RoleMapper {
                 .id(role.getId())
                 .name(role.getName())
                 .auth0Id(role.getAuth0Id())
-                // .organizationId(role.getOrganizationId())
                 .permissions(role.getPermissions().stream().map(Permissions::getName).collect(Collectors.toSet()))
                 .build();
     }

@@ -51,8 +51,8 @@ public class UserController {
 
     @GetMapping("/v1/user/by/auth/{id}")
     public ResponseEntity<UserResponseDto> getUserByAuth0Id(@Valid @PathVariable String id) {
-        UserResponseDto user = userService.getUserByAuth0Id("auth0|" + id);
-        return ResponseEntity.ok(user);
+        Users user = userService.getUserByAuth0Id("auth0|" + id);
+        return ResponseEntity.ok(UserMapper.toUserReponse(user));
     }
 
     @PostMapping("/v1/user")
