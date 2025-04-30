@@ -1,7 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.project;
 
-
-import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.Hibernate;
@@ -20,7 +18,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.dto.reque
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.mapper.ProjectMapper;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembers;

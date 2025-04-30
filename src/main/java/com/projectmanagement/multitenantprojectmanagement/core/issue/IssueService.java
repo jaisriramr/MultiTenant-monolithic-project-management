@@ -31,8 +31,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectSe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.SprintService;
-import com.projectmanagement.multitenantprojectmanagement.core.watcher.WatcherService;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;

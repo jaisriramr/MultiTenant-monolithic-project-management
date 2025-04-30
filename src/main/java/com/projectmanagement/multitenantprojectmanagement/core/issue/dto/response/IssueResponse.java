@@ -6,13 +6,8 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
-import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.response.CommentResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
-import com.projectmanagement.multitenantprojectmanagement.core.label.Label;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.response.LabelResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.watcher.Watcher;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.dto.response.WatcherResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
 
 import lombok.Builder;

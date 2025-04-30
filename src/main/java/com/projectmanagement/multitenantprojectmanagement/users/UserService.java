@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
-import com.projectmanagement.multitenantprojectmanagement.exception.ConflictException;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersRepository;

@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response;
 
-import java.util.List;
 import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;

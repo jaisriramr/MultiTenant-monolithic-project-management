@@ -39,7 +39,6 @@ import com.projectmanagement.multitenantprojectmanagement.users.UserService;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;
-import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

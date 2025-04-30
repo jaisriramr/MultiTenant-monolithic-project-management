@@ -3,7 +3,6 @@ package com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.requ
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 

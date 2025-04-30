@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
-import com.projectmanagement.multitenantprojectmanagement.core.watcher.WatcherService;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.CreateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.UpdateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;

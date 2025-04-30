@@ -9,7 +9,6 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.Workflow;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.Status;
 
@@ -21,10 +20,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.Data;
+
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,7 +31,7 @@ import lombok.ToString;
 @Entity
 @Getter
 @Setter
-@ToString(exclude = {"workflow", "transitions"}) // prevent stack overflow in logs
+@ToString(exclude = {"workflow"})
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @RequiredArgsConstructor
 @EntityListeners(AuditingEntityListener.class)

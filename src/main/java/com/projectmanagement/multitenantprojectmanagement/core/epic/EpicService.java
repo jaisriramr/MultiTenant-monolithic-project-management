@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.mapper.EpicMapper;
-import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;

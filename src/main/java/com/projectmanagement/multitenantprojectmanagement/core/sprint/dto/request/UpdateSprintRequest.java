@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.sprint.dto.request;
 
-import java.time.LocalDate;
 import java.util.UUID;
 
 import lombok.Builder;

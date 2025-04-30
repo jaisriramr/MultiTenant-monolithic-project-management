@@ -10,9 +10,7 @@ import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
-import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.mapper.IssueRelationMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -34,7 +32,7 @@ public class IssueRelationService {
     private final JWTUtils jwtUtils;
     private final OrganizationsService organizationsService;
     
-    private IssueRelation getIssueRelationById(UUID id) {
+    public IssueRelation getIssueRelationById(UUID id) {
         logger.info("Getting issue relation by ID: {}", maskingString.maskSensitive(id.toString()));
 
         IssueRelation issueRelation = issueRelationRepository.findById(id).orElseThrow(() -> new NotFoundException("Issue relation not found for the given ID: " + id));

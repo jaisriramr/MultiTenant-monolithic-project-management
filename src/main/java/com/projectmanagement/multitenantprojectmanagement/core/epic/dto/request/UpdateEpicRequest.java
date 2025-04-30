@@ -1,7 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request;
 
-import java.util.UUID;
-
 import lombok.Builder;
 import lombok.Data;
 

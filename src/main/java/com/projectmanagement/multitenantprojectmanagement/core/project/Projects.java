@@ -10,7 +10,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.ProjectMember;
@@ -31,7 +30,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

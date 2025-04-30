@@ -9,9 +9,7 @@ import com.projectmanagement.multitenantprojectmanagement.organizations.Organiza
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsRepository;
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.CreateOrganizationRequest;
-import com.projectmanagement.multitenantprojectmanagement.organizations.dto.request.UpdateOrganizationRequest;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
-import com.projectmanagement.multitenantprojectmanagement.organizations.mapper.OrganizationMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -19,7 +17,6 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.ResponseEntity;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;

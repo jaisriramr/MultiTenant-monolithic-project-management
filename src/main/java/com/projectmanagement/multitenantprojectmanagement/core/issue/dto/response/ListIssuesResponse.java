@@ -2,9 +2,6 @@ package com.projectmanagement.multitenantprojectmanagement.core.issue.dto.respon
 
 import java.util.UUID;
 
-import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
-import com.projectmanagement.multitenantprojectmanagement.users.Users;
-
 import lombok.Builder;
 import lombok.Data;
 

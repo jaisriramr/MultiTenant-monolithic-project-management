@@ -1,7 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.core.attachment;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -15,7 +14,6 @@ import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.dto.response.AttachmentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.mapper.AttachmentMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
-import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;

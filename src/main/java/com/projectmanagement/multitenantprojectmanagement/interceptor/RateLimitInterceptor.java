@@ -1,15 +1,8 @@
 package com.projectmanagement.multitenantprojectmanagement.interceptor;
 
-import java.io.IOException;
-
-import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
-import com.projectmanagement.multitenantprojectmanagement.config.CacheService;
-
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
 
 @Component

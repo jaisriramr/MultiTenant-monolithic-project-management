@@ -1,10 +1,8 @@
 package com.projectmanagement.multitenantprojectmanagement.core.comment.dto.response;
 
 import java.time.Instant;
-import java.util.List;
 import java.util.UUID;
 
-import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.response.ListIssuesUserDto;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 
 import lombok.Builder;
