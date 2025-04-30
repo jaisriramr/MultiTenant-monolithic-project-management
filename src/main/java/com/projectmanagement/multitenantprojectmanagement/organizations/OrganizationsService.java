@@ -23,8 +23,6 @@ import com.projectmanagement.multitenantprojectmanagement.organizations.dto.requ
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationResponse;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.OrganizationsResponse;
 import com.projectmanagement.multitenantprojectmanagement.organizations.mapper.OrganizationMapper;
-import com.projectmanagement.multitenantprojectmanagement.users.UserService;
-import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

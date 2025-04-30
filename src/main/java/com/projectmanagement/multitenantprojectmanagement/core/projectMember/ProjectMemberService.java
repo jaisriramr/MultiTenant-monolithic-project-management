@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.projectMember;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMemberDetailedResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.dto.response.ProjectMembersResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.mapper.ProjectMemberMapper;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.StatusService;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;

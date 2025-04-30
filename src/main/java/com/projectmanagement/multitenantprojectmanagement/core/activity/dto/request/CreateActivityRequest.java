@@ -2,8 +2,6 @@ package com.projectmanagement.multitenantprojectmanagement.core.activity.dto.req
 
 import java.util.UUID;
 
-import com.projectmanagement.multitenantprojectmanagement.core.activity.enums.EntityType;
-
 import lombok.Data;
 
 @Data

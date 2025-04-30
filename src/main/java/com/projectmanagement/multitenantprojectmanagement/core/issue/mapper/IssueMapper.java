@@ -1,7 +1,6 @@
 package com.projectmanagement.multitenantprojectmanagement.core.issue.mapper;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -22,7 +21,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.label.mapper.Labe
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.mapper.WatcherMapper;
-import com.projectmanagement.multitenantprojectmanagement.core.worklog.WorkLog;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.mapper.WorklogMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;

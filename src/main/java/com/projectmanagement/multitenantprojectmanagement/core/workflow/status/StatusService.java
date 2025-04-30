@@ -7,10 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.Workflow;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.dto.request.CreateStatusRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.dto.request.UpdateStatusRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.dto.response.StatusResponse;
@@ -19,8 +17,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.e
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.mapper.StatusMapper;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
-import com.projectmanagement.multitenantprojectmanagement.organizationmembers.OrganizationMembersService;
-import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;

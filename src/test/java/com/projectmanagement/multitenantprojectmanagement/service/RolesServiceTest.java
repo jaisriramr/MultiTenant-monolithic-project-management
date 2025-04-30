@@ -25,7 +25,6 @@ import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundExce
 import com.projectmanagement.multitenantprojectmanagement.roles.Roles;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RolesResponse;
-import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMapper;
 
 public class RolesServiceTest {
 

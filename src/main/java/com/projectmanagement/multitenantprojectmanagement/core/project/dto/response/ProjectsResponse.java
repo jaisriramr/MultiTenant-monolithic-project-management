@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.project.dto.response;
 
-import java.time.Instant;
 import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;

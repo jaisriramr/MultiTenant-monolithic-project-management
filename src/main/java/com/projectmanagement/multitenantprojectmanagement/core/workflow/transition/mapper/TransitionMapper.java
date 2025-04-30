@@ -9,8 +9,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.workflow.status.m
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.transition.Transition;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.transition.dto.request.CreateTransitionRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.workflow.transition.dto.response.TransitionResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowdto.response.WorkflowResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowmapper.WorkflowMapper;
 
 public class TransitionMapper {
 

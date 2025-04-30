@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.sprint;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -25,7 +24,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.sprint.mapper.Spr
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @RestController

@@ -20,7 +20,6 @@ import com.projectmanagement.multitenantprojectmanagement.organizationmembers.Or
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.roles.mapper.RoleMapper;
-import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 
 public class ProjectMapper {

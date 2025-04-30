@@ -7,9 +7,7 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 
-import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
-import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.mapper.ProjectMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
@@ -66,7 +64,7 @@ public class SprintMapper {
         List<ListSprintResponse> listSprints = new ArrayList<>();
 
         for(Sprint sprint: sprints) {
-            List<Issue> issues = new ArrayList<>();
+            
 
             ListSprintResponse singleSprint = ListSprintResponse.builder()
                     .id(sprint.getId())

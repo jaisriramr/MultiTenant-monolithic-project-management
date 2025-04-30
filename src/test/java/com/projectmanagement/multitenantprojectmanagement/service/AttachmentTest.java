@@ -3,16 +3,12 @@ package com.projectmanagement.multitenantprojectmanagement.service;
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.*;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.dto.response.AttachmentResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.attachment.mapper.AttachmentMapper;
-import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
-import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
-import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.organizations.OrganizationsService;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.s3.s3Service;
@@ -22,8 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -72,8 +66,6 @@ class AttachmentTest {
 
     private UUID attachmentId;
     private Attachment mockAttachment;
-    private String auth0Id;
-    private Organizations mockOrganization;
 
     @BeforeEach
     void setUp() {

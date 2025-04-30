@@ -3,7 +3,6 @@ package com.projectmanagement.multitenantprojectmanagement.users;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,12 +16,9 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.projectmanagement.multitenantprojectmanagement.exception.BadRequestException;
-import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.CreateUserRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.request.UpdateUserRequest;
-import com.projectmanagement.multitenantprojectmanagement.users.dto.request.UploadFileRequest;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserResponseDto;

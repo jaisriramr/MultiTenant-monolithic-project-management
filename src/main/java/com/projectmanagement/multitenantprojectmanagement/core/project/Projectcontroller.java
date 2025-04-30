@@ -1,6 +1,5 @@
 package com.projectmanagement.multitenantprojectmanagement.core.project;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
@@ -17,12 +16,10 @@ import com.projectmanagement.multitenantprojectmanagement.core.project.dto.reque
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.request.UpdateProjectRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectDetailsResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.project.dto.response.ProjectsResponse;
-import com.projectmanagement.multitenantprojectmanagement.core.project.mapper.ProjectMapper;
 import com.projectmanagement.multitenantprojectmanagement.organizations.dto.response.PaginatedResponseDto;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
