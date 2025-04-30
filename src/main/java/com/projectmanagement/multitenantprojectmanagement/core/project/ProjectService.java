@@ -54,7 +54,7 @@ public class ProjectService {
         return project;
     }
 
-    @Cacheable(value = "projects", key = "#id")
+    // @Cacheable(value = "projects", key = "#id")
     public ProjectDetailsResponse getProjectByIdForController(UUID id) {
         Projects project = getProjectById(id);
         
@@ -64,15 +64,18 @@ public class ProjectService {
     }
 
     @CachePut(value = "products", key = "#result.id")
-    public void updateProjectIssueCount(UUID id, Long count) {
+    public ProjectDetailsResponse updateProjectIssueCount(UUID id, Long count) {
         logger.info("Updating issue count");
         
         Projects project = getProjectById(id);
 
         project.setIssueCount(count);
 
-        projectRepository.save(project);
+        Projects savedProject = projectRepository.save(project);
+
         logger.debug("Updated project issue count: {}", count);
+
+        return ProjectMapper.toProjectDetailsResponse(savedProject);
     }
 
     public PaginatedResponseDto<ProjectsResponse> getAllProjectsByOrganizationId(UUID orgId, Pageable pageable) {
@@ -85,7 +88,7 @@ public class ProjectService {
         return ProjectMapper.toProjectsResponse(projects);
     }
 
-    @CachePut(value = "products", key = "#id")
+    @CachePut(value = "products", key = "#result.id")
     @Transactional
     public ProjectDetailsResponse createProject(@Valid CreateProjectRequest createProjectRequest) {
         logger.info("Creating project for the given name: {}", maskingString.maskSensitive(createProjectRequest.getName()));
@@ -106,7 +109,7 @@ public class ProjectService {
         return ProjectMapper.toProjectDetailsResponse(savedProject);
     }
 
-    @CachePut(value = "products", key = "#id")
+    @CachePut(value = "products", key = "#result.id")
     @Transactional
     public ProjectDetailsResponse updateProject(@Valid UpdateProjectRequest updateProjectRequest) {
         logger.info("Updating project for the given ID: {}", maskingString.maskSensitive(updateProjectRequest.getId().toString()));

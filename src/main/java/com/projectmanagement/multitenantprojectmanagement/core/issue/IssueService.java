@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
@@ -27,6 +29,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.event.Issue
 import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.IssueRelationService;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
@@ -59,6 +62,10 @@ public class IssueService {
     private final ApplicationEventPublisher eventPublisher;
     private final JWTUtils jwtUtils;
     private final OrganizationsService organizationsService;
+    // private final StringRedisTemplate redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisSubscriber redisSubscriber;
+
 
     public Issue getIssueById(UUID id) {
         logger.info("Getting issue for the given ID: {}", maskingString.maskSensitive(id.toString()));
@@ -80,6 +87,8 @@ public class IssueService {
         Issue issue = issueRepository.findByKeyAndOrganization_Auth0Id(key, auth0OrgId).orElseThrow(() -> new NotFoundException("Issue not found for the given Key: " + key));
 
         logger.debug("Fetched issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
+
+        redisSubscriber.sendNotification("Getting issued ID: " + issue.getId().toString());
 
         return IssueMapper.toIssueResponse(issue);
     }
@@ -225,6 +234,8 @@ public class IssueService {
 
         logger.debug("Saved epic issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
+        redisTemplate.convertAndSend("notifications", auth0OrgId + ":" + savedIssue.getId().toString());
+
         return IssueMapper.toListIssuesResponse(savedIssue);
 
     }
@@ -304,6 +315,9 @@ public class IssueService {
         eventPublisher.publishEvent(new IssueEvent(this, savedIssue.getId(), reporter.getId()));
 
         logger.debug("Saved Issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        // redisTemplate.convertAndSend("notifications:" + auth0OrgId, savedIssue.getId().toString());
+        redisSubscriber.sendNotification("Created issued ID: " + savedIssue.getId().toString());
 
         return IssueMapper.toListIssuesResponse(savedIssue);
 

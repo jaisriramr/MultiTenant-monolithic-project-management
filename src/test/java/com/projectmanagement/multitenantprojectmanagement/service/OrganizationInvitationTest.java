@@ -7,7 +7,6 @@ import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.*;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.dto.request.InviteUserToAnOrganization;
 import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.enums.StatusForInvitation;
-import com.projectmanagement.multitenantprojectmanagement.organizationinvitation.mapper.OrganizationInvitationMapper;
 import com.projectmanagement.multitenantprojectmanagement.roles.RolesService;
 import com.projectmanagement.multitenantprojectmanagement.roles.dto.response.RoleResponse;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.PaginatedResponseDto;

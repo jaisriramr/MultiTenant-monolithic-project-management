@@ -8,12 +8,9 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.respons
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssuePriority;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
-import com.projectmanagement.multitenantprojectmanagement.core.issue.mapper.IssueMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.IssueRelationService;
-import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.enums.IssueRelationType;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
-import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.SprintService;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
@@ -27,13 +24,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,6 +43,9 @@ class IssueTest {
 
     @Mock
     private MaskingString maskingString;
+
+    @Mock
+    private StringRedisTemplate stringRedisTemplate;
 
     @Mock
     private ProjectService projectService;
