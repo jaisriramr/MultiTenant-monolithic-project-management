@@ -36,30 +36,35 @@ public class OrganizationMembersController {
     private final OrganizationMembersService organizationMembersService;
     private final JWTUtils jwtUtils;
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"super:admin\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members")
     public ResponseEntity<PaginatedResponseDto<OrganizationMembersResponseDto>> getAllMembers(Pageable pageable) {
         PaginatedResponseDto<OrganizationMembersResponseDto> members = organizationMembersService.getAllMembers(pageable);
         return ResponseEntity.ok(members);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:member\", \"view:organization\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members/{id}")
     public ResponseEntity<OrganizationMembersResponseDto> getOrganizationMemberById(@PathVariable UUID id) {
         OrganizationMembers organizationMember = organizationMembersService.getOrganizationMemberById(id);
         return ResponseEntity.ok(OrganizationMembersMapper.toOrganizationMemberResponseDto(organizationMember));
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:member\", \"view:organization\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members/user/{auth0UserId}")
     public ResponseEntity<PaginatedResponseDto<OrganizationMembersResponseDto>> getOrgsWhereUserIsAMember(@PathVariable String auth0UserId, Pageable pageable) {
         PaginatedResponseDto<OrganizationMembersResponseDto> organizationMembers = organizationMembersService.getOrgsWhereUserIsAMember(auth0UserId, pageable);
         return ResponseEntity.ok(organizationMembers);
     }
-
+    
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:member\", \"view:organization\", \"list:members\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members/organization/{orgId}")
     public ResponseEntity<PaginatedResponseDto<ListUsersOfAnOrganizationDto>> getAllMembersInAnOrganization(@PathVariable UUID orgId, Pageable pageable) {
         PaginatedResponseDto<ListUsersOfAnOrganizationDto> organizationMembers = organizationMembersService.getAllMembersInAnOrganization(orgId, pageable);
         return ResponseEntity.ok(organizationMembers);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:member\", \"view:organization\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members/me")
     public ResponseEntity<UserDetailsFromOrganizationMember> getOrganizationMemberByUserIdandOrgId(@AuthenticationPrincipal Jwt jwt) {
 
@@ -73,6 +78,7 @@ public class OrganizationMembersController {
         return ResponseEntity.ok(OrganizationMembersMapper.toSpecificUserOrganizationMember(organizationMember));
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:member\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization-members/organization/{orgId}/role/{roleId}")
     public ResponseEntity<PaginatedResponseDto<ListUsersOfAnOrganizationDto>> getMembersByRoleInAnOrg(@PathVariable String orgId, @PathVariable String roleId, Pageable pageable) {
         PaginatedResponseDto<ListUsersOfAnOrganizationDto> organizationMembers = organizationMembersService.getMembersByRoleInAnOrg(orgId, roleId, pageable);
@@ -85,6 +91,7 @@ public class OrganizationMembersController {
         return ResponseEntity.status(HttpStatus.CREATED).body(onBoardedUserDetails);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"invite:member\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/organization-member/onboard/invitee")
     public ResponseEntity<UserDetailsFromOrganizationMember> onBoardInvitedUser(@RequestBody OnBoardInvitedUserRequest onboBoardInvitedUserRequest) {
         UserDetailsFromOrganizationMember onBoardedUserDetails = organizationMembersService.onBoardInvitedUser(onboBoardInvitedUserRequest);
@@ -98,7 +105,7 @@ public class OrganizationMembersController {
 
         return ResponseEntity.ok(response);
     }
-
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:member_role\", \"remove:role\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/organization-member/{orgMemberId}/remove/roles")
     public ResponseEntity<String> removeRolesToAnUser(@PathVariable UUID orgMemberId ,@RequestBody AssignRoleToUserDto assignRoleToUserDto) {
         String response = organizationMembersService.removeRolesFromAnUser(orgMemberId, assignRoleToUserDto);
@@ -106,6 +113,7 @@ public class OrganizationMembersController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"remove:member\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/organization-member/{id}")
     public ResponseEntity<String> deleteOrganzationMemberById(@PathVariable UUID id) {
         // removed static from jwtutils
