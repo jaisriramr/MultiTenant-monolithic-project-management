@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 @SpringBootApplication
 @EnableCaching
 // @EnableScheduling
-@EnableJpaAuditing
 public class MultiTenantProjectManagementApplication {
 
 	public static void main(String[] args) {
