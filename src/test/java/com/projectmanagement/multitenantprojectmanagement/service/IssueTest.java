@@ -9,6 +9,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.Issue
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.enums.IssueType;
 import com.projectmanagement.multitenantprojectmanagement.core.issuerelation.IssueRelationService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.SprintService;
@@ -58,6 +59,9 @@ class IssueTest {
 
     @Mock
     private IssueRelationService issueRelationService;
+
+    @Mock
+    private RedisSubscriber redisSubscriber;
 
     @Mock
     private JWTUtils jwtUtils;
