@@ -1,10 +1,14 @@
 package com.projectmanagement.multitenantprojectmanagement.service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.*;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.dto.response.AttachmentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -64,8 +68,15 @@ class AttachmentTest {
     @InjectMocks
     private AttachmentService attachmentService;
 
+    @Mock
+    private RedisSubscriber redisSubscriber;
+
+    @Mock
+    private ActivityService activityService;
+
     private UUID attachmentId;
     private Attachment mockAttachment;
+    private ActivityResponse activityResponse;
 
     @BeforeEach
     void setUp() {
@@ -90,6 +101,10 @@ class AttachmentTest {
         mockAttachment.setProject(project);
         mockAttachment.setUploadedBy(user);
         mockAttachment.setIssue(issue);
+
+        activityResponse = new ActivityResponse();
+        activityResponse.setId(attachmentId);
+
     
 
         when(jwtUtils.getAuth0OrgId()).thenReturn("orgId");
@@ -158,11 +173,11 @@ class AttachmentTest {
         when(issueService.getIssueById(eq(mockAttachment.getIssue().getId()))).thenReturn(mockAttachment.getIssue());
 
         when(attachmentRepository.save(any(Attachment.class))).thenReturn(mockAttachment);
-        
-            // When
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
+            
         AttachmentResponse response = attachmentService.createAttachment(file, mockAttachment.getProject().getId(), mockAttachment.getIssue().getId(), commentId);
 
-            // Then
+            
         assertNotNull(response);
         assertEquals(mockAttachment.getId(), response.getId());
         
@@ -172,7 +187,8 @@ class AttachmentTest {
     void testDeleteAttachment_Success() {
 
         when(attachmentRepository.findByIdAndOrganization_Auth0Id(eq(attachmentId), anyString())).thenReturn(Optional.of(mockAttachment));
-
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
+        
         AttachmentResponse result = attachmentService.deleteAttachment(attachmentId);
 
         assertNotNull(result);
