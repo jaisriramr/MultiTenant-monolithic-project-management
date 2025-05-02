@@ -1,5 +1,8 @@
 package com.projectmanagement.multitenantprojectmanagement.service;
 
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.*;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.CreateIssueRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.dto.request.UpdateIssueRequest;
@@ -72,11 +75,18 @@ class IssueTest {
     @Mock
     private ApplicationEventPublisher eventPublisher;
 
+    @Mock
+    private ActivityService activityService;
+
+
+    
+
     @InjectMocks
     private IssueService issueService;
 
     private UUID issueId;
     private Issue mockIssue;
+    private ActivityResponse activityResponse;
 
     @BeforeEach
     void setUp() {
@@ -92,6 +102,9 @@ class IssueTest {
         mockIssue.setKey("TS-123");
         mockIssue.setTitle("Test Issue");
         mockIssue.setDescription("This is a test issue.");
+
+        activityResponse = new ActivityResponse();
+        activityResponse.setId(issueId);
 
         Projects project = new Projects();
         project.setId(UUID.randomUUID());
@@ -171,6 +184,7 @@ class IssueTest {
 
         when(issueRepository.findByIdAndOrganization_Auth0Id(eq(issueId), anyString())).thenReturn(Optional.of(mockIssue));
         when(userService.getUserEntity(userId)).thenReturn(user);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         issueService.assigneeUserToAnIssue(issueId, userId);
 
@@ -183,6 +197,7 @@ class IssueTest {
         mockIssue.setAssignee(new Users());
 
         when(issueRepository.findByIdAndOrganization_Auth0Id(eq(issueId), anyString())).thenReturn(Optional.of(mockIssue));
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         issueService.unAssigneeUserToAnIssue(issueId);
 
@@ -212,6 +227,7 @@ class IssueTest {
         when(jwtUtils.getAuth0OrgId()).thenReturn("auth0|12345");
         when(organizationsService.getOrganizationByAuth0Id("auth0|12345")).thenReturn(organization);
         when(issueRepository.save(any(Issue.class))).thenReturn(mockIssue);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         ListIssuesResponse result = issueService.createIssue(request);
 
@@ -228,8 +244,9 @@ class IssueTest {
         request.setDescription("Updated Description");
         request.setPriority("HIGH");
 
-        when(issueRepository.findById(issueId)).thenReturn(Optional.of(mockIssue));
+        when(issueRepository.findByIdAndOrganization_Auth0Id(issueId, "orgId")).thenReturn(Optional.of(mockIssue));
         when(issueRepository.saveAndFlush(mockIssue)).thenReturn(mockIssue);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         IssueResponse result = issueService.updateIssue(request);
 

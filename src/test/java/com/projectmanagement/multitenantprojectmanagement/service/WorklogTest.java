@@ -1,8 +1,14 @@
 package com.projectmanagement.multitenantprojectmanagement.service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
+import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.*;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.CreateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.UpdateWorklogRequest;
@@ -43,7 +49,16 @@ public class WorklogTest {
     private MaskingString maskingString;
 
     @Mock
+    private ActivityService activityService;
+
+    @Mock
     private OrganizationsService organizationsService;
+
+    @Mock
+    private ProjectService projectService;
+
+    @Mock
+    private RedisSubscriber redisSubscriber;
 
     @Mock
     private JWTUtils jwtUtils;
@@ -53,6 +68,7 @@ public class WorklogTest {
 
     private UUID worklogId;
     private WorkLog mockWorklog;
+    private ActivityResponse activityResponse;
 
     @BeforeEach
     void setUp() {
@@ -63,11 +79,17 @@ public class WorklogTest {
         mockWorklog.setId(worklogId);
         mockWorklog.setTimeSpentInMinutes(100);
         mockWorklog.setComment("something");
-        
+        mockWorklog.setTimeSpentInMinutes(10);
+
         Issue issue = new Issue();
         issue.setId(UUID.randomUUID());
         issue.setWorkLog(mockWorklog);
         mockWorklog.setIssue(issue);
+
+        Projects projects = new Projects();
+        projects.setId(worklogId);
+        mockWorklog.setProject(projects);
+
         Users user = new Users();
         user.setId(UUID.randomUUID());
         mockWorklog.setUser(user);
@@ -75,6 +97,11 @@ public class WorklogTest {
         organization.setId(UUID.randomUUID());
         mockWorklog.setOrganization(organization);
         
+        activityResponse = new ActivityResponse();
+        activityResponse.setId(worklogId);
+        activityResponse.setAction("update");
+        
+
         // Mocking the dependencies
         when(maskingString.maskSensitive(anyString())).thenReturn("masked");
         when(jwtUtils.getAuth0OrgId()).thenReturn("orgId");
@@ -115,6 +142,8 @@ public class WorklogTest {
         CreateWorklogRequest request = new CreateWorklogRequest();
         request.setIssueId(UUID.randomUUID());
         request.setUserId(UUID.randomUUID());
+        request.setProjectId(worklogId);
+        request.setTimeSpentInMinutes(10);
 
         Issue issue = new Issue();
         Users user = new Users();
@@ -125,6 +154,8 @@ public class WorklogTest {
         when(jwtUtils.getAuth0OrgId()).thenReturn("auth0|12345");
         when(organizationsService.getOrganizationByAuth0Id("auth0|12345")).thenReturn(organization);
         when(workLogRepository.save(any(WorkLog.class))).thenReturn(mockWorklog);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
+        when(projectService.getProjectById(worklogId)).thenReturn(mockWorklog.getProject());
 
         WorklogResponse result = workLogService.createWorklog(request);
 
@@ -137,9 +168,11 @@ public class WorklogTest {
         UpdateWorklogRequest request = new UpdateWorklogRequest();
         request.setId(worklogId);
         request.setTimeSpentInMinutes(10);
+        
 
         when(workLogRepository.findByIdAndOrganization_Auth0Id(eq(worklogId), anyString())).thenReturn(Optional.of(mockWorklog));
         when(workLogRepository.save(any(WorkLog.class))).thenReturn(mockWorklog);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         WorklogResponse result = workLogService.updateWorklog(request);
 
@@ -151,6 +184,7 @@ public class WorklogTest {
     void testDeleteWorklogById_Success() {
 
         when(workLogRepository.findByIdAndOrganization_Auth0Id(eq(worklogId), anyString())).thenReturn(Optional.of(mockWorklog));
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         WorklogResponse result = workLogService.deleteWorklogById(worklogId);
 

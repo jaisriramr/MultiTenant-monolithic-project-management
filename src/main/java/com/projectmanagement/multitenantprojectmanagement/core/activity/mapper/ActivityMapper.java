@@ -2,6 +2,7 @@ package com.projectmanagement.multitenantprojectmanagement.core.activity.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 
@@ -16,6 +17,23 @@ import com.projectmanagement.multitenantprojectmanagement.users.Users;
 import com.projectmanagement.multitenantprojectmanagement.users.dto.mapper.UserMapper;
 
 public class ActivityMapper {
+
+
+    public static CreateActivityRequest toCreateActivityRequest(UUID entityId,UUID projectId,String orgId,String action, String description, String fieldChanged, String oldValue, String newValue, String entityType, UUID userId) {
+
+        return CreateActivityRequest.builder()
+                .entityId(entityId)
+                .projectId(projectId)
+                .organizationId(orgId)
+                .action(action)
+                .description(description)
+                .fieldChanged(fieldChanged)
+                .oldValue(oldValue)
+                .newValue(newValue)
+                .entityType(entityType)
+                .performedById(userId)
+                .build();
+    }
 
     public static Activity toActivityEntity(CreateActivityRequest createActivityRequest, Users performedBy, Projects project, Organizations organizations) {
 

@@ -10,6 +10,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
@@ -45,6 +46,10 @@ public class WorkLog {
     @ManyToOne
     @JoinColumn(name = "organization_id")
     private Organizations organization;
+
+    @ManyToOne
+    @JoinColumn(name = "project_id")
+    private Projects project;
 
     @OneToOne
     @JoinColumn(name = "issue_id", unique = true, nullable = false)

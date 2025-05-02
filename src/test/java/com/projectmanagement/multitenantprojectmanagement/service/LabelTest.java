@@ -1,10 +1,14 @@
 package com.projectmanagement.multitenantprojectmanagement.service;
 
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
 import com.projectmanagement.multitenantprojectmanagement.core.label.*;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.request.CreateLabelRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.label.dto.response.LabelResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -47,7 +51,13 @@ public class LabelTest {
     private JWTUtils jwtUtils;
 
     @Mock
+    private ActivityService activityService;
+
+    @Mock
     private OrganizationsService organizationsService;
+
+    @Mock
+    private RedisSubscriber redisSubscriber;
 
     @InjectMocks
     private LabelService labelService;
@@ -135,11 +145,15 @@ public class LabelTest {
         Issue issue = new Issue();
         Organizations organization = new Organizations();
 
+        ActivityResponse activityResponse = new ActivityResponse();
+        activityResponse.setId(labelId);
+
         when(projectService.getProjectById(request.getProjectId())).thenReturn(project);
         when(issueService.getIssueById(request.getIssueId())).thenReturn(issue);
         when(jwtUtils.getAuth0OrgId()).thenReturn("auth0|12345");
         when(organizationsService.getOrganizationByAuth0Id("auth0|12345")).thenReturn(organization);
         when(labelRepository.save(any(Label.class))).thenReturn(mockLabel);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         Label result = labelService.createLabel(request);
 
