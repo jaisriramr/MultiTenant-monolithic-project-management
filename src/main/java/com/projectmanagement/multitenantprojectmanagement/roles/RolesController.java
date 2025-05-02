@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,18 +35,21 @@ public class RolesController {
 
     private final RolesService rolesService;
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:role\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/role/{id}")
     public ResponseEntity<RoleResponse> getRoleById(@PathVariable UUID id){
         RoleResponse role = rolesService.getRoleById(id);
         return ResponseEntity.ok(role);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:roles\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/roles")
     public ResponseEntity<PaginatedRoleResponse<RolesResponse>> getAllRoles(Pageable pageable) {
         PaginatedRoleResponse<RolesResponse> roles = rolesService.getAllRoles(pageable);
         return ResponseEntity.ok(roles);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:role\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/role/by/name")
     public ResponseEntity<RoleResponse> getRoleByName(@Valid @RequestParam String name) {
         Roles role = rolesService.getRoleByName(name);
@@ -53,6 +57,7 @@ public class RolesController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:role\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/role/auth0Id/{roleId}")
     public ResponseEntity<RoleResponse> getRoleByAuth0Id(@PathVariable String roleId) {
         RoleResponse role = rolesService.getRoleByAuth0Id(roleId);
@@ -65,30 +70,35 @@ public class RolesController {
         return ResponseEntity.ok(roles);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:role\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/role")
     public ResponseEntity<RoleResponse> createRole(@Valid @RequestBody CreateRoleRequest createRoleRequest) {
         RoleResponse role = rolesService.createRole(createRoleRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(role);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"assign:permissions\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/role/{roleId}/assign/permissions")
     public ResponseEntity<RoleResponse> assignPermissionsToRole(@PathVariable UUID roleId ,@Valid @RequestBody AssignPermissions assignPermissions) {
         RoleResponse role = rolesService.assignPermissionsToRole(roleId, assignPermissions.getPermissions());
         return ResponseEntity.ok(role);
     }
     
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"remove:permissions\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/role/{roleId}/remove/permissions")
     public ResponseEntity<RoleResponse> removePermissionsFromRole(@PathVariable UUID roleId ,@Valid @RequestBody AssignPermissions assignPermissions) {
         RoleResponse role = rolesService.removePermissionsFromRole(roleId, assignPermissions.getPermissions());
         return ResponseEntity.ok(role);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:role\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/role")
     public ResponseEntity<RoleResponse> UpdateRole(@Valid @RequestBody UpdateRoleRequest updateRoleRequest) {
         RoleResponse role = rolesService.updateRole(updateRoleRequest);
         return ResponseEntity.ok(role);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:role\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/role/{id}")
     public ResponseEntity<String> deleteRoleById(@PathVariable UUID id) {
         String roleResponse = rolesService.deleteRoleById(id);
