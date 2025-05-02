@@ -1,12 +1,17 @@
 package com.projectmanagement.multitenantprojectmanagement.service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.*;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.response.CommentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
 import com.projectmanagement.multitenantprojectmanagement.helper.MaskingString;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
@@ -29,7 +34,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 class CommentTest {
@@ -58,8 +65,15 @@ class CommentTest {
     @InjectMocks
     private CommentService commentService;
 
+    @Mock
+    private RedisSubscriber redisSubscriber;
+
+    @Mock
+    private ActivityService activityService;
+
     private UUID commentId;
     private Comment mockComment;
+    private ActivityResponse activityResponse;
 
     @BeforeEach
     void setUp() {
@@ -75,8 +89,15 @@ class CommentTest {
         Issue issue = new Issue();
         issue.setId(commentId);
 
+        activityResponse = new ActivityResponse();
+        activityResponse.setId(commentId);
+
+        Projects project = new Projects();
+        project.setId(commentId);
+
         mockComment = new Comment();
         mockComment.setId(commentId);  
+        mockComment.setProject(project);
         mockComment.setContent("Test comment");
         mockComment.setAuthor(author);
         mockComment.setOrganization(organization);
@@ -152,6 +173,7 @@ class CommentTest {
         when(organizationsService.getOrganizationByAuth0Id("auth0|12345")).thenReturn(mockComment.getOrganization());
         when(projectService.getProjectById(request.getProjectId())).thenReturn(mockComment.getProject());
         when(commentRepository.save(any(Comment.class))).thenReturn(mockComment);
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         CommentResponse result = commentService.createComment(request);
 
@@ -163,6 +185,7 @@ class CommentTest {
     void testDeleteComment_Success() {
 
         when(commentRepository.findByIdAndOrganization_Auth0Id(eq(commentId), anyString())).thenReturn(Optional.of(mockComment));
+        when(activityService.createActivity(any(CreateActivityRequest.class))).thenReturn(activityResponse);
 
         CommentResponse result = commentService.deleteComment(commentId);
 
