@@ -2,11 +2,15 @@ package com.projectmanagement.multitenantprojectmanagement.core.issue.dto.respon
 
 import java.util.UUID;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ListIssuesResponse {
     private UUID id;
     private String key;

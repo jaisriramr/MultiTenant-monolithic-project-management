@@ -6,11 +6,15 @@ import java.util.UUID;
 
 import com.projectmanagement.multitenantprojectmanagement.users.dto.response.UserListResponseDto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class WorklogResponse {
     private UUID id;
     private UserListResponseDto user;

@@ -10,11 +10,15 @@ import com.projectmanagement.multitenantprojectmanagement.core.label.dto.respons
 import com.projectmanagement.multitenantprojectmanagement.core.watcher.dto.response.WatcherResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class IssueResponse {
     private UUID id;
     private String key;
