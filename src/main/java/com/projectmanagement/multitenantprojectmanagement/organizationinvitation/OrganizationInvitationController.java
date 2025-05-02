@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,6 +63,7 @@ public class OrganizationInvitationController {
         return ResponseEntity.ok(invitations);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"invite:member\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/organization-invitation")
     public ResponseEntity<OrganizationInvitation> inviteUserToAnOrganization(@Valid @RequestBody InviteUserToAnOrganization inviteUserToAnOrganization) {
         OrganizationInvitation response = organizationInvitationService.inviteUserToAnOrganization(inviteUserToAnOrganization);
@@ -75,6 +77,7 @@ public class OrganizationInvitationController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"revoke:invitation\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/organization-invitation")
     public ResponseEntity<String> revokeInvitationToAnUser(@Valid @RequestBody RevokeInvitationToAnUser revokeInvitationToAnUser) {
         String response = organizationInvitationService.revokeInvitationToAnUser(revokeInvitationToAnUser.getOrgId(), revokeInvitationToAnUser.getInvitationId());
