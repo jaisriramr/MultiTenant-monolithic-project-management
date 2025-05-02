@@ -1,18 +1,9 @@
 package com.projectmanagement.multitenantprojectmanagement.core.notification;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
-import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 
 import lombok.RequiredArgsConstructor;
 

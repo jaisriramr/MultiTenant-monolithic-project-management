@@ -14,7 +14,6 @@ import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.project.enums.ProjectStatus;
 import com.projectmanagement.multitenantprojectmanagement.core.projectMember.ProjectMember;
 import com.projectmanagement.multitenantprojectmanagement.core.sprint.Sprint;
-import com.projectmanagement.multitenantprojectmanagement.core.workflow.workflowscheme.WorkflowScheme;
 import com.projectmanagement.multitenantprojectmanagement.organizations.Organizations;
 import com.projectmanagement.multitenantprojectmanagement.users.Users;
 
