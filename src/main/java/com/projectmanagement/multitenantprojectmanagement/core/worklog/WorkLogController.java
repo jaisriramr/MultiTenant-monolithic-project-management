@@ -3,6 +3,7 @@ package com.projectmanagement.multitenantprojectmanagement.core.worklog;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +29,7 @@ public class WorkLogController {
 
     private final WorkLogService workLogService;
     
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:task\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/worklog/{id}")
     public ResponseEntity<WorklogResponse> getWorklogById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         WorkLog workLog = workLogService.getWorklogById(id);
@@ -35,6 +37,7 @@ public class WorkLogController {
         return ResponseEntity.ok(WorklogMapper.toWorklogResponse(workLog));
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:task\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/worklog")
     public ResponseEntity<WorklogResponse> createWorklog(@RequestBody CreateWorklogRequest createWorklogRequest, @AuthenticationPrincipal Jwt jwt) {
         WorklogResponse workLog = workLogService.createWorklog(createWorklogRequest);
@@ -42,6 +45,7 @@ public class WorkLogController {
         return ResponseEntity.ok(workLog);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:task\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/worklog")
     public ResponseEntity<WorklogResponse> updateWorklog(@RequestBody UpdateWorklogRequest updateWorklogRequest, @AuthenticationPrincipal Jwt jwt) {
         WorklogResponse worklog = workLogService.updateWorklog(updateWorklogRequest);
@@ -49,6 +53,7 @@ public class WorkLogController {
         return ResponseEntity.ok(worklog);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:task\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/worklog/{id}")
     public ResponseEntity<WorklogResponse> deleteWorklog(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         WorklogResponse worklog = workLogService.deleteWorklogById(id);

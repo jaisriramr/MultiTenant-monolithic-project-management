@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -30,6 +31,8 @@ public class AttachmentController {
 
     private final AttachmentService attachmentService;
 
+
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:attachment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/attachment/{id}")
     public ResponseEntity<AttachmentResponse> findAttachmentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         Attachment attachment = attachmentService.getAttachmentById(id);
@@ -39,6 +42,7 @@ public class AttachmentController {
         return ResponseEntity.ok(attachmentResponse);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:attachment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/attachment/{id}/issue")
     public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByIssueId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<AttachmentResponse> response = attachmentService.getAttachmentsByIssueId(id, pageable);
@@ -46,13 +50,15 @@ public class AttachmentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:attachment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/attachment/{id}/comment")
     public ResponseEntity<PaginatedResponseDto<AttachmentResponse>> findAllAttachmentsByCommentId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<AttachmentResponse> response = attachmentService.getAttachmentByCommentId(id, pageable);
 
         return ResponseEntity.ok(response);
     }
-
+    
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"upload:attachment\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/attachment/issue")
     public ResponseEntity<AttachmentResponse> createAttachmentIssue(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("issueId") UUID issueId,@AuthenticationPrincipal Jwt jwt) {
         AttachmentResponse response = attachmentService.createAttachment(file,projectId, issueId, null);
@@ -60,6 +66,7 @@ public class AttachmentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"upload:attachment\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/attachment/comment")
     public ResponseEntity<AttachmentResponse> createAttachmentComment(@Valid @RequestPart("file") MultipartFile file, @RequestParam("projectId") UUID projectId,@RequestParam("commentId") UUID commentId,@AuthenticationPrincipal Jwt jwt) {
         AttachmentResponse response = attachmentService.createAttachment(file, projectId,null, commentId);
@@ -67,6 +74,7 @@ public class AttachmentController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:attachment\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/attachment/{id}")
     public ResponseEntity<AttachmentResponse> deleteAttachmentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         AttachmentResponse attachmentResponse = attachmentService.deleteAttachment(id);

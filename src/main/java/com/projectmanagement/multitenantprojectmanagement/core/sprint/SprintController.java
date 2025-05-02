@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +34,7 @@ public class SprintController {
 
     private final SprintService sprintService;
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:sprint\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/sprint/{id}")
     public ResponseEntity<SprintDetailedResponse> getSprintById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         Sprint sprint = sprintService.getSprintEntity(id);
@@ -42,6 +44,7 @@ public class SprintController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:sprint\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/sprint/{id}/project")
     public ResponseEntity<PaginatedResponseDto<ListSprintResponse>> getAllSprintByProjectId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         
@@ -52,6 +55,7 @@ public class SprintController {
     }
     
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:sprint\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/sprint")
     public ResponseEntity<SprintDetailedResponse> createSprint(@RequestBody CreateSprintRequest createSprintRequest, @AuthenticationPrincipal Jwt jwt) {
         SprintDetailedResponse sprint = sprintService.createSprint(createSprintRequest);
@@ -59,6 +63,7 @@ public class SprintController {
         return ResponseEntity.ok(sprint);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:sprint\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/sprint")
     public ResponseEntity<SprintDetailedResponse> updateSprint(@RequestBody UpdateSprintRequest updateSprintRequest, @AuthenticationPrincipal Jwt jwt) {
         SprintDetailedResponse sprint = sprintService.updateSprint(updateSprintRequest);
@@ -66,6 +71,7 @@ public class SprintController {
         return ResponseEntity.ok(sprint);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:sprint\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/sprint/{id}")
     public ResponseEntity<MinimalSprintResponse> deleteSprintById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         MinimalSprintResponse sprint = sprintService.deleteSprint(id);
