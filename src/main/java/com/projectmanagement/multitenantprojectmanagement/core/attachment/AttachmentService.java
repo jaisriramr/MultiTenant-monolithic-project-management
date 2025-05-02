@@ -11,11 +11,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.mapper.ActivityMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.dto.response.AttachmentResponse;
 import com.projectmanagement.multitenantprojectmanagement.core.attachment.mapper.AttachmentMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.Comment;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -43,6 +47,9 @@ public class AttachmentService {
     private final OrganizationsService organizationsService;
     private final s3Service s3Service;
     private final JWTUtils jwtUtils;
+
+    private final ActivityService activityService;
+    private final RedisSubscriber redisSubscriber;
 
     public Attachment getAttachmentById(UUID id) {
         logger.info("Getting attachment by ID: {}", maskingString.maskSensitive(id.toString()));
@@ -120,6 +127,20 @@ public class AttachmentService {
 
             logger.debug("Saved attachment ID: {}", maskingString.maskSensitive(uploadedAttachment.getId().toString()));
 
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(uploadedAttachment.getId(), 
+                                                                            uploadedAttachment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Created comment", 
+                                                                            "add an", 
+                                                                            "Attachment",
+                                                                            uploadedAttachment.getName(), 
+                                                                            "", 
+                                                                            "Attachment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
             return AttachmentMapper.toAttachmentResponse(uploadedAttachment);
         }
         catch (IOException e) {
@@ -138,11 +159,27 @@ public class AttachmentService {
     public AttachmentResponse deleteAttachment(UUID id) {
         logger.info("Deleting attachment for the given ID: {}",maskingString.maskSensitive(id.toString()));
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
         Attachment attachment = getAttachmentById(id);
 
         attachmentRepository.delete(attachment);
 
         logger.debug("Deleted attachment for the given ID: {}", maskingString.maskSensitive(id.toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(attachment.getId(), 
+                                                                            attachment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Created comment", 
+                                                                            "deleted an", 
+                                                                            "Attachment",
+                                                                            attachment.getName(), 
+                                                                            "", 
+                                                                            "Attachment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         return AttachmentMapper.toAttachmentResponse(attachment);
     }
