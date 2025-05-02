@@ -2,6 +2,7 @@ package com.projectmanagement.multitenantprojectmanagement.core.issue;
 
 import java.util.ArrayList;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.mapper.ActivityMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.Epic;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.EpicService;
 import com.projectmanagement.multitenantprojectmanagement.core.epic.dto.request.CreateEpicRequest;
@@ -63,6 +67,8 @@ public class IssueService {
     private final OrganizationsService organizationsService;
     // private final StringRedisTemplate redisTemplate;
     private final RedisTemplate<String, Object> redisTemplate;
+
+    private final ActivityService activityService;
     private final RedisSubscriber redisSubscriber;
 
 
@@ -127,7 +133,12 @@ public class IssueService {
     public void assigneeUserToAnIssue(UUID issueId, UUID userId) {
         logger.info("Assigning user to an issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
 
+        
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+        
         Issue issue = getIssueById(issueId);
+        
+        Users oldAssignee = issue.getAssignee();
 
         Users user = userService.getUserEntity(userId);
 
@@ -136,19 +147,53 @@ public class IssueService {
         issueRepository.save(issue);
 
         logger.debug("User Assigned to the given issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Changed Assignee", 
+                                                                            "changed the", 
+                                                                            "Assignee",
+                                                                            oldAssignee == null ? "Unassigned" : oldAssignee.toString(), 
+                                                                            issue.getAssignee().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
     }
 
     @Transactional
     public void unAssigneeUserToAnIssue(UUID issueId) {
         logger.info("Assigning user to an issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
         Issue issue = getIssueById(issueId);
+
+        Users oldAssignee = issue.getAssignee();
 
         issue.setAssignee(null);
 
         issueRepository.save(issue);
 
         logger.debug("User Assigned to the given issue ID: {}", maskingString.maskSensitive(issue.getId().toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Changed Assignee", 
+                                                                            "changed the", 
+                                                                            "Assignee",
+                                                                            oldAssignee.toString(), 
+                                                                            "Unassigned", 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
     }
 
     @Transactional
@@ -156,6 +201,8 @@ public class IssueService {
         logger.info("Linking issue with ID: {} to epic ID: {}", maskingString.maskSensitive(issueId.toString()), maskingString.maskSensitive(epicParentId.toString()));
 
         Issue parent = getIssueById(epicParentId);
+
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
 
         if(!"EPIC".equals(parent.getType().toString())) {
             throw new BadRequestException("Given parent id is not epic");
@@ -175,13 +222,31 @@ public class IssueService {
 
         logger.debug("Linked child work ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(childWork.getId(), 
+                                                                            parent.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Link Issue To Epic", 
+                                                                            "changed the", 
+                                                                            "Parent",
+                                                                            "None", 
+                                                                            parent.getKey(), 
+                                                                            "ChildWork", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         return IssueMapper.toListIssuesResponse(savedIssue);
 
     }
 
     @Transactional
-    public ListIssuesResponse unlinkIssueToEpic(UUID issueId) {
+    public ListIssuesResponse unlinkIssueToEpic(UUID issueId, UUID epicParentId) {
         logger.info("UnLinking issue with ID: {}", maskingString.maskSensitive(issueId.toString()));
+
+        Issue parent = getIssueById(epicParentId);
+
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
 
         Issue childWork = getIssueById(issueId);
 
@@ -192,6 +257,20 @@ public class IssueService {
         issueRelationService.deleteIssueRelationById(issueId);
 
         logger.debug("UnLinked child work ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(childWork.getId(), 
+                                                                            childWork.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "UnLink Issue To Epic", 
+                                                                            "changed the", 
+                                                                            "Parent",
+                                                                            parent.getKey(), 
+                                                                            "None", 
+                                                                            "ChildWork", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         return IssueMapper.toListIssuesResponse(savedIssue);
 
@@ -233,7 +312,19 @@ public class IssueService {
 
         logger.debug("Saved epic issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
-        redisTemplate.convertAndSend("notifications", auth0OrgId + ":" + savedIssue.getId().toString());
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(savedIssue.getId(), 
+                                                                            savedIssue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Create Epic Issue", 
+                                                                            "created the", 
+                                                                            "Work Item",
+                                                                            "", 
+                                                                            "", 
+                                                                            "Epic", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         return IssueMapper.toListIssuesResponse(savedIssue);
 
@@ -277,6 +368,34 @@ public class IssueService {
 
         eventPublisher.publishEvent(new IssueEvent(this, savedIssue.getId(), reporter.getId()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(savedIssue.getId(), 
+                                                                            savedIssue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Create sub Issue", 
+                                                                            "created the", 
+                                                                            "Work Item",
+                                                                            "", 
+                                                                            "", 
+                                                                            "Sub Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
+        ActivityResponse activityResponse2 = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(Parent.getId(), 
+                                                                            Parent.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Create sub Issue", 
+                                                                            "changed the", 
+                                                                            "Parent",
+                                                                            "None", 
+                                                                            Parent.getKey(), 
+                                                                            "SubIssue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse2.getId().toString());
+
         return IssueMapper.toListIssuesResponse(savedIssue);
     }
 
@@ -315,8 +434,36 @@ public class IssueService {
 
         logger.debug("Saved Issue ID: {}", maskingString.maskSensitive(savedIssue.getId().toString()));
 
-        // redisTemplate.convertAndSend("notifications:" + auth0OrgId, savedIssue.getId().toString());
-        redisSubscriber.sendNotification("Created issued ID: " + savedIssue.getId().toString());
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(savedIssue.getId(), 
+                                                                            savedIssue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Create Issue", 
+                                                                            "created the", 
+                                                                            "Work Item",
+                                                                            "", 
+                                                                            "", 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
+        if(sprint != null) {
+            ActivityResponse activityResponse2 = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(savedIssue.getId(), 
+                                                                            savedIssue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Linked to Sprint", 
+                                                                            "updated the", 
+                                                                            "Sprint",
+                                                                            "None", 
+                                                                            sprint.getName(), 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse2.getId().toString());
+        }
+        
 
         return IssueMapper.toListIssuesResponse(savedIssue);
 
@@ -326,17 +473,55 @@ public class IssueService {
     public IssueResponse updateIssue(@Valid UpdateIssueRequest updateIssueRequest) {
         logger.info("Updating issue for the given ID: {}", maskingString.maskSensitive(updateIssueRequest.getId().toString()));
 
-        Issue issue = issueRepository.findById(updateIssueRequest.getId()).orElseThrow(() -> new NotFoundException("Issue not found for the given ID: " + updateIssueRequest.getId()));
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        Issue issue = getIssueById(updateIssueRequest.getId());
 
         if(updateIssueRequest.getTitle() != null) {
+            String oldTitle = issue.getTitle();
+
             issue.setTitle(updateIssueRequest.getTitle());
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "changed issue summary", 
+                                                                            "updated the", 
+                                                                            "Summary",
+                                                                            oldTitle, 
+                                                                            updateIssueRequest.getTitle(), 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         if(updateIssueRequest.getDescription() != null) {
+            String oldDesc = issue.getDescription();
+
             issue.setDescription(updateIssueRequest.getDescription());
+
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "changed issue description", 
+                                                                            "updated the", 
+                                                                            "Description",
+                                                                            oldDesc, 
+                                                                            updateIssueRequest.getDescription(), 
+                                                                            "Issue", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
         }
 
         if(updateIssueRequest.getStatus() != null) {
+            String oldStatus = issue.getStatus() != null ? issue.getStatus().toString() : "None";
+
             if("TO_DO".equals(updateIssueRequest.getStatus())) {
                 issue.setStatus(IssueStatus.TO_DO);
             }else if("IN_PROGRESS".equals(updateIssueRequest.getStatus())) {
@@ -348,9 +533,27 @@ public class IssueService {
             }else {
                 throw new IllegalArgumentException("Given status is not allowed");
             }
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "changed issue status", 
+                                                                            "changed the", 
+                                                                            "Status",
+                                                                            oldStatus, 
+                                                                            issue.getStatus().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         if(updateIssueRequest.getType() != null) {
+
+            String oldType = issue.getType() != null ? issue.getType().toString() : "None";
+
             if("TASK".equals(updateIssueRequest.getType())) {
                 issue.setType(IssueType.TASK);
             }else if("BUG".equals(updateIssueRequest.getType())) {
@@ -362,9 +565,27 @@ public class IssueService {
             }else {
                 throw new IllegalArgumentException("Given type is not allowed");
             }
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "changed issue status", 
+                                                                            "changed the", 
+                                                                            "Type",
+                                                                            oldType, 
+                                                                            issue.getType().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         if(updateIssueRequest.getPriority() != null) {
+
+            String oldPriority = issue.getPriority() != null ? issue.getPriority().toString() : "None";
+
             if("LOW".equals(updateIssueRequest.getPriority())) {
                 issue.setPriority(IssuePriority.LOW);
             }else if("MEDIUM".equals(updateIssueRequest.getPriority())) {
@@ -376,6 +597,21 @@ public class IssueService {
             }else {
                 throw new IllegalArgumentException("Given type is not allowed");
             }
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "changed issue priority", 
+                                                                            "changed the", 
+                                                                            "Priority",
+                                                                            oldPriority, 
+                                                                            issue.getPriority().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         if(updateIssueRequest.getSprintId() != null) {
@@ -383,22 +619,88 @@ public class IssueService {
             Sprint sprint = sprintService.getSprintEntity(updateIssueRequest.getSprintId());
 
             issue.setSprint(sprint);
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Added to Sprint", 
+                                                                            "updated the", 
+                                                                            "Sprint",
+                                                                            "None", 
+                                                                            sprint.getName(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
-        if(updateIssueRequest.getAssigneeId() != null) {
-            Users user = userService.getUserEntity(updateIssueRequest.getAssigneeId());
+        // if(updateIssueRequest.getAssigneeId() != null) {
+        //     Users user = userService.getUserEntity(updateIssueRequest.getAssigneeId());
 
-            issue.setAssignee(user);
-        }
+        //     issue.setAssignee(user);
+
+        //     ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+        //                                         toCreateActivityRequest(issue.getId(), 
+        //                                                                     issue.getProject().getId(), 
+        //                                                                     auth0OrgId, 
+        //                                                                     "Added to Sprint", 
+        //                                                                     "updated the", 
+        //                                                                     "Sprint",
+        //                                                                     "None", 
+        //                                                                     sprint.getName(), 
+        //                                                                     "Issue", 
+        //                                                                     null));
+
+        //     redisSubscriber.sendNotification(activityResponse.getId().toString());
+
+        // }
 
         if(updateIssueRequest.getReporterId() != null) {
+
+            String oldReporter = issue.getReporter() != null ? issue.getReporter().toString() : "None";
+
             Users user = userService.getUserEntity(updateIssueRequest.getReporterId());
 
             issue.setReporter(user);
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "updated reporter", 
+                                                                            "updated the", 
+                                                                            "Reporter",
+                                                                            oldReporter, 
+                                                                            issue.getReporter().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         if(updateIssueRequest.getStoryPoints() != null) {
+
+            String oldSprintPoint = issue.getStoryPoints().toString();
+
             issue.setStoryPoints(updateIssueRequest.getStoryPoints());
+
+            ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(issue.getId(), 
+                                                                            issue.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "updated story point", 
+                                                                            "updated the", 
+                                                                            "Story point estimate",
+                                                                            oldSprintPoint, 
+                                                                            issue.getStoryPoints().toString(), 
+                                                                            "Issue", 
+                                                                            null));
+
+            redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         }
 
         Issue updatedIssue = issueRepository.saveAndFlush(issue);

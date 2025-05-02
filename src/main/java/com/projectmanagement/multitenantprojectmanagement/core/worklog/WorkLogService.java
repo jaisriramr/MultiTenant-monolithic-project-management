@@ -7,8 +7,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.request.CreateActivityRequest;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.mapper.ActivityMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
+import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
+import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.CreateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.request.UpdateWorklogRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.worklog.dto.response.WorklogResponse;
@@ -36,6 +43,16 @@ public class WorkLogService {
     private final OrganizationsService organizationsService;
     private final JWTUtils jwtUtils;
 
+    private final ProjectService projectService;
+    private final ActivityService activityService;
+    private final RedisSubscriber redisSubscriber;
+
+    public static String convertMinutesToHHMM(int totalMinutes) {
+        int hours = totalMinutes / 60;
+        int minutes = totalMinutes % 60;
+        return String.format("%02d:%02d", hours, minutes);
+    }
+
     public WorkLog getWorklogById(UUID id) {
         logger.info("Getting worklog for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
@@ -58,13 +75,30 @@ public class WorkLogService {
 
         String auth0OrgId = jwtUtils.getAuth0OrgId();
 
+        Projects project = projectService.getProjectById(createWorklogRequest.getProjectId());
+
         Organizations organization = organizationsService.getOrganizationByAuth0Id(auth0OrgId);
 
         WorkLog workLog = WorklogMapper.toworklogEntity(createWorklogRequest, issue, user, organization);
+        workLog.setProject(project);
 
         WorkLog savedWorkLog = workLogRepository.save(workLog);
 
         logger.debug("Created worklog ID: {}", maskingString.maskSensitive(savedWorkLog.getId().toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(savedWorkLog.getId(), 
+                                                                            createWorklogRequest.getProjectId(), 
+                                                                            auth0OrgId, 
+                                                                            "Created Worklog", 
+                                                                            "updated the", 
+                                                                            "Time Spent", 
+                                                                            "0M", 
+                                                                            convertMinutesToHHMM(createWorklogRequest.getTimeSpentInMinutes()), 
+                                                                            "worklog", 
+                                                                            user.getId()));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         return WorklogMapper.toWorklogResponse(savedWorkLog);
     }
@@ -73,7 +107,12 @@ public class WorkLogService {
     public WorklogResponse updateWorklog(@Valid UpdateWorklogRequest updateWorklogRequest) {
         logger.info("Updating worklog for the given ID: {}", maskingString.maskSensitive(updateWorklogRequest.getId().toString()));
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
+        
         WorkLog workLog = getWorklogById(updateWorklogRequest.getId());
+        
+        Integer oldValeForActivity = workLog.getTimeSpentInMinutes();
 
         WorkLog updateWorkLogEntity = WorklogMapper.toUpdateWorklogEntity(updateWorklogRequest, workLog);
 
@@ -81,12 +120,28 @@ public class WorkLogService {
 
         logger.debug("Updated worklog ID: {}", maskingString.maskSensitive(updatedWorklog.getId().toString()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(updatedWorklog.getId(), 
+                                                                            updatedWorklog.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Updated Worklog", 
+                                                                            "updated the", 
+                                                                            "Time Spent", 
+                                                                            convertMinutesToHHMM(oldValeForActivity), 
+                                                                            convertMinutesToHHMM(updatedWorklog.getTimeSpentInMinutes()), 
+                                                                            "worklog", 
+                                                                            updatedWorklog.getUser().getId()));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         return WorklogMapper.toWorklogResponse(updatedWorklog);
     }
 
     @Transactional
     public WorklogResponse deleteWorklogById(UUID id) {
         logger.info("Deleting worklog for the given ID: {}", maskingString.maskSensitive(id.toString()));
+
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
 
         WorkLog workLog = getWorklogById(id);
 
@@ -97,6 +152,20 @@ public class WorkLogService {
         }
 
         workLogRepository.delete(workLog);
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(workLog.getId(), 
+                                                                            workLog.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Updated Worklog", 
+                                                                            "updated the", 
+                                                                            "Time Spent", 
+                                                                            convertMinutesToHHMM(workLog.getTimeSpentInMinutes()), 
+                                                                            "0M", 
+                                                                            "worklog", 
+                                                                            workLog.getUser().getId()));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         logger.debug("Deleted worklog ID: {}", maskingString.maskSensitive(id.toString()));
 

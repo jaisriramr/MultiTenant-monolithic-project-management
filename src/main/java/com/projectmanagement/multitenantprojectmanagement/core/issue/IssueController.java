@@ -84,9 +84,9 @@ public class IssueController {
     }
 
     @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"unlink:task\"}, #jwt.claims[\"org_id\"])")
-    @PostMapping("/v1/issue/unlink/{id}/epic")
-    public ResponseEntity<ListIssuesResponse> unlinkIssueToEpic(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
-        ListIssuesResponse issue = issueService.unlinkIssueToEpic(id);
+    @PostMapping("/v1/issue/unlink/{id}/epic/{epicId}")
+    public ResponseEntity<ListIssuesResponse> unlinkIssueToEpic(@PathVariable UUID id, @PathVariable UUID epicId,@AuthenticationPrincipal Jwt jwt) {
+        ListIssuesResponse issue = issueService.unlinkIssueToEpic(id, epicId);
 
         return ResponseEntity.ok(issue);
     }

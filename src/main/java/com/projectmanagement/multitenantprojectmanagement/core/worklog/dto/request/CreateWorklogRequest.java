@@ -23,4 +23,5 @@ public class CreateWorklogRequest {
     private UUID issueId;
     @NotNull
     private UUID userId;
+    private UUID projectId;
 }
