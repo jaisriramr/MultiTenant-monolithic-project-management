@@ -73,10 +73,6 @@ public class Projects {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectMember> projectMembers = new ArrayList<>();
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "workflow_scheme_id")
-    // private WorkflowScheme workflowScheme;
-
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private Instant createdAt;
