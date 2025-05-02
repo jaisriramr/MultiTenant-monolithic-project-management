@@ -9,6 +9,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.projectmanagement.multitenantprojectmanagement.auth0.utils.JWTUtils;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.ActivityService;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.dto.response.ActivityResponse;
+import com.projectmanagement.multitenantprojectmanagement.core.activity.mapper.ActivityMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentReplyRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.CreateCommentRequest;
 import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.request.UpdateCommentRequest;
@@ -16,6 +19,7 @@ import com.projectmanagement.multitenantprojectmanagement.core.comment.dto.respo
 import com.projectmanagement.multitenantprojectmanagement.core.comment.mapper.CommentMapper;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.Issue;
 import com.projectmanagement.multitenantprojectmanagement.core.issue.IssueService;
+import com.projectmanagement.multitenantprojectmanagement.core.notification.RedisSubscriber;
 import com.projectmanagement.multitenantprojectmanagement.core.project.ProjectService;
 import com.projectmanagement.multitenantprojectmanagement.core.project.Projects;
 import com.projectmanagement.multitenantprojectmanagement.exception.NotFoundException;
@@ -41,6 +45,9 @@ public class CommentService {
     private final JWTUtils jwtUtils;
     private final OrganizationsService organizationsService;
     private final ProjectService projectService;
+
+    private final ActivityService activityService;
+    private final RedisSubscriber redisSubscriber;
 
     public Comment getCommentById(UUID id) {
         logger.info("Getting comment for the given ID: {}", maskingString.maskSensitive(id.toString()));
@@ -103,6 +110,20 @@ public class CommentService {
 
         logger.debug("Saved comment ID: {}", maskingString.maskSensitive(savedComment.getId().toString()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(comment.getId(), 
+                                                                            comment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "Created comment", 
+                                                                            "add a", 
+                                                                            "Comment",
+                                                                            comment.getContent(), 
+                                                                            "", 
+                                                                            "Comment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         return CommentMapper.toCommentResponse(savedComment);
     }
 
@@ -131,6 +152,20 @@ public class CommentService {
 
         logger.debug("Saved reply ID: {}", maskingString.maskSensitive(savedComment.getId().toString()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(comment.getId(), 
+                                                                            comment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "replied to comment", 
+                                                                            "add a", 
+                                                                            "Comment",
+                                                                            comment.getContent(), 
+                                                                            "", 
+                                                                            "Comment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         return CommentMapper.toCommentResponse(savedComment);
     }
 
@@ -138,7 +173,11 @@ public class CommentService {
     public CommentResponse updateComment(UpdateCommentRequest updateCommentRequest) {
         logger.info("Updating comment for the given ID: {}", maskingString.maskSensitive(updateCommentRequest.getId().toString()));
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
         Comment comment = getCommentById(updateCommentRequest.getId());
+
+        String oldComment = comment.getContent();
 
         if(updateCommentRequest.getComment() != null) {
             comment.setContent(updateCommentRequest.getComment());
@@ -148,6 +187,20 @@ public class CommentService {
 
         logger.debug("Updated comment ID: {}", maskingString.maskSensitive(updatedComment.getId().toString()));
 
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(comment.getId(), 
+                                                                            comment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "updated to comment", 
+                                                                            "updated a", 
+                                                                            "Comment",
+                                                                            oldComment, 
+                                                                            comment.getContent(), 
+                                                                            "Comment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
+
         return CommentMapper.toCommentResponse(updatedComment);
     }
 
@@ -155,11 +208,27 @@ public class CommentService {
     public CommentResponse deleteComment(UUID id) {
         logger.info("Deleting comment for the given ID: {}", maskingString.maskSensitive(id.toString()));
 
+        String auth0OrgId = jwtUtils.getAuth0OrgId();
+
         Comment comment = getCommentById(id);
 
         commentRepository.delete(comment);
 
         logger.debug("Deleted comment ID: {}", maskingString.maskSensitive(comment.getId().toString()));
+
+        ActivityResponse activityResponse = activityService.createActivity(ActivityMapper.
+                                                toCreateActivityRequest(comment.getId(), 
+                                                                            comment.getProject().getId(), 
+                                                                            auth0OrgId, 
+                                                                            "deleted comment", 
+                                                                            "deleted a", 
+                                                                            "Comment",
+                                                                            "", 
+                                                                            "", 
+                                                                            "Comment", 
+                                                                            null));
+
+        redisSubscriber.sendNotification(activityResponse.getId().toString());
 
         return CommentMapper.toCommentResponse(comment);
 
