@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -32,20 +34,20 @@ public class OrganizationsController {
 
     @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"super:admin\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organizations")
-    public ResponseEntity<List<OrganizationsResponse>> getAllOrganizations() {
+    public ResponseEntity<List<OrganizationsResponse>> getAllOrganizations(@AuthenticationPrincipal Jwt jwt) {
         List<OrganizationsResponse> organizationList = organizationsService.getOrganizations();
         return ResponseEntity.ok(organizationList);
     }
 
     @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:organization\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/organization/{id}")
-    public ResponseEntity<OrganizationResponse> getOrganizationById(@PathVariable UUID id) {
+    public ResponseEntity<OrganizationResponse> getOrganizationById(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
         OrganizationResponse organization = organizationsService.getOrganizationById(id);
         return ResponseEntity.ok(organization);
     }
 
     @PostMapping("/v1/organization")
-    public ResponseEntity<OrganizationResponse> createOrganization(@RequestBody CreateOrganizationRequest createOrganizationRequest) {
+    public ResponseEntity<OrganizationResponse> createOrganization(@RequestBody CreateOrganizationRequest createOrganizationRequest, @AuthenticationPrincipal Jwt jwt) {
         Organizations organization = organizationsService.createAnOrganization(createOrganizationRequest);
 
         OrganizationResponse orgDto = OrganizationMapper.toOrganizationResponse(organization);
@@ -55,7 +57,7 @@ public class OrganizationsController {
 
     @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:organization\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/organization")
-    public ResponseEntity<OrganizationResponse> updateOrganization(@RequestBody UpdateOrganizationRequest updateOrganizationRequest) {
+    public ResponseEntity<OrganizationResponse> updateOrganization(@RequestBody UpdateOrganizationRequest updateOrganizationRequest, @AuthenticationPrincipal Jwt jwt) {
         OrganizationResponse updatedOrganization = organizationsService.updateAnOrganiation(updateOrganizationRequest);
 
         return ResponseEntity.ok(updatedOrganization);
@@ -63,7 +65,7 @@ public class OrganizationsController {
 
     @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:organization\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/organization/{id}/by/{userId}")
-    public ResponseEntity<String> deleteOrganizationById(@PathVariable UUID id, @PathVariable UUID userId) {
+    public ResponseEntity<String> deleteOrganizationById(@PathVariable UUID id, @PathVariable UUID userId, @AuthenticationPrincipal Jwt jwt) {
         String response = organizationsService.deleteOrganizationById(id, userId);
         return ResponseEntity.ok(response);
     }
