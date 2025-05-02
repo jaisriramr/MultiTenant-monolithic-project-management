@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +32,7 @@ public class Projectcontroller {
 
     private final ProjectService projectService;
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:project\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/project/{id}")
     public ResponseEntity<ProjectDetailsResponse> getProjectById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.getProjectByIdForController(id);
@@ -38,6 +40,7 @@ public class Projectcontroller {
         return ResponseEntity.ok(project);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:project\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/project/{id}/organization")
     public ResponseEntity<PaginatedResponseDto<ProjectsResponse>> getAllProjectsByOrgId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<ProjectsResponse> projects = projectService.getAllProjectsByOrganizationId(id, pageable);
@@ -45,12 +48,14 @@ public class Projectcontroller {
         return ResponseEntity.ok(projects);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:project\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/project")
     public ResponseEntity<ProjectDetailsResponse> createProject(@Valid @RequestBody CreateProjectRequest createProjectRequest,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.createProject(createProjectRequest);
         return ResponseEntity.ok(project);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:project\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/project")
     public ResponseEntity<ProjectDetailsResponse> updateProject(@RequestBody UpdateProjectRequest updateProjectRequest,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.updateProject(updateProjectRequest);
@@ -58,6 +63,7 @@ public class Projectcontroller {
         return ResponseEntity.ok(project);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:project\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/project/{id}")
     public ResponseEntity<ProjectDetailsResponse> deleteProjectById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         ProjectDetailsResponse project = projectService.deleteProjectById(id);

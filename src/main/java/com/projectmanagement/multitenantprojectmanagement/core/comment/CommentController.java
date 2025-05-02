@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -31,6 +32,7 @@ public class CommentController {
 
     private final CommentService commentService;
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:comment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/comment/{id}")
     public ResponseEntity<CommentResponse> getCommentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         Comment comment = commentService.getCommentById(id);
@@ -38,6 +40,7 @@ public class CommentController {
         return ResponseEntity.ok(CommentMapper.toCommentResponse(comment));
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:comment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/comment/{id}/issue")
     public ResponseEntity<PaginatedResponseDto<CommentResponse>> getCommentsByIssueId(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<CommentResponse> comments = commentService.getCommentsByIssueId(id, pageable);
@@ -45,6 +48,7 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"view:comment\"}, #jwt.claims[\"org_id\"])")
     @GetMapping("/v1/comment/{id}/replies")
     public ResponseEntity<PaginatedResponseDto<CommentResponse>> getCommentReplies(@PathVariable UUID id, Pageable pageable,@AuthenticationPrincipal Jwt jwt) {
         PaginatedResponseDto<CommentResponse> comments = commentService.getRepliesByCommentId(id, pageable);
@@ -52,6 +56,7 @@ public class CommentController {
         return ResponseEntity.ok(comments);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:comment\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/comment")
     public ResponseEntity<CommentResponse> createComment(@RequestBody CreateCommentRequest createCommentRequest,@AuthenticationPrincipal Jwt jwt) {
         CommentResponse commentResponse = commentService.createComment(createCommentRequest);
@@ -59,6 +64,7 @@ public class CommentController {
         return ResponseEntity.ok(commentResponse);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"create:comment\"}, #jwt.claims[\"org_id\"])")
     @PostMapping("/v1/comment/reply")
     public ResponseEntity<CommentResponse> createCommentReply(@RequestBody CreateCommentReplyRequest createCommentReplyRequest,@AuthenticationPrincipal Jwt jwt) {
         CommentResponse commentResponse = commentService.createCommentReply(createCommentReplyRequest);
@@ -66,6 +72,7 @@ public class CommentController {
         return ResponseEntity.ok(commentResponse);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"update:comment\"}, #jwt.claims[\"org_id\"])")
     @PutMapping("/v1/comment")
     public ResponseEntity<CommentResponse> updateComment(@RequestBody UpdateCommentRequest updateCommentRequest,@AuthenticationPrincipal Jwt jwt) {
         CommentResponse commentResponse = commentService.updateComment(updateCommentRequest);
@@ -73,6 +80,7 @@ public class CommentController {
         return ResponseEntity.ok(commentResponse);
     }
 
+    @PreAuthorize("@organizationMembersService.hasPermission(#jwt.subject, {\"delete:comment\"}, #jwt.claims[\"org_id\"])")
     @DeleteMapping("/v1/comment/{id}")
     public ResponseEntity<CommentResponse> deleteCommentById(@PathVariable UUID id,@AuthenticationPrincipal Jwt jwt) {
         CommentResponse commentResponse = commentService.deleteComment(id);
