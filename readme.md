@@ -1,6 +1,6 @@
 # Multi-Tenant Project Management Tool 🛠️
 
-A scalable, role-based project management tool built with Spring Boot, PostgreSQL, Redis, and Auth0. Features include:
+A role-based project management tool built with Spring Boot, PostgreSQL, Redis, and Auth0. Features include:
 
 - ✅ Multi-tenant architecture
 - 🔐 Auth0 JWT authentication
